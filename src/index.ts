@@ -1,9 +1,12 @@
 import {Expression} from './Expression';
 import {Functions} from './Functions';
+import {QueryBuilder} from './QueryBuilder';
+import {Query} from './Query';
 
-export const fx = new Functions();
+const fx = new Functions();
 
-export function expr(value: string): Expression {
+function expr(value: string): Expression {
     return new Expression(value);
 }
 
+export {QueryBuilder, Query, fx, expr};

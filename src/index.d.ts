@@ -1,4 +1,7 @@
 import { Expression } from './Expression';
 import { Functions } from './Functions';
-export declare const fx: Functions;
-export declare function expr(value: string): Expression;
+import { QueryBuilder } from './QueryBuilder';
+import { Query } from './Query';
+declare const fx: Functions;
+declare function expr(value: string): Expression;
+export { QueryBuilder, Query, fx, expr };
