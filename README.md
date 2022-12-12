@@ -20,6 +20,24 @@ ClickHouse Query is intuitive query builder to overcome the complexity of [Click
 
 ## Usage
 
+### Installation
+
+Using yarn:
+```bash
+yarn add clickhouse-query
+```
+
+Using npm: 
+```bash
+npm install clickhouse-query
+```
+
+Once the package is installed, you can import the library using import:
+
+```ts
+import { fx, expr, Query } from 'clickhouse-query';
+```
+
 ### Quick start
 
 ```ts
