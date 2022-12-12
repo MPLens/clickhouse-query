@@ -7,11 +7,12 @@
   "compilerOptions": {
     "target": "es6",
     "module": "commonjs",
+    "outDir": "dist",
     "rootDir": "./",
     "types": ["node", "jest"],
     "typeRoots": ["@types", "src/types/*"],
     "esModuleInterop": true,
     "strict": true,
-    "declaration": true
+    "declaration": true,
   },
 }
