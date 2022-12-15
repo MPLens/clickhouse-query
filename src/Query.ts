@@ -55,7 +55,7 @@ type JoinOperator =
 
 export class Query {
     private readonly connection: ClickHouse;
-    private readonly logger: Logger;
+    private readonly logger: Logger | null;
     private withPart: Selectable | null = null;
     private selectPart: SelectParams = '*';
     private fromPart: [string | Query, string | null] | null = null;
@@ -67,7 +67,7 @@ export class Query {
     private joinPart: Array<[JoinOperator, Query, string, string]> = [];
     private aliasPart: string | null = null;
 
-    constructor(ch: ClickHouse, logger: Logger) {
+    constructor(ch: ClickHouse, logger: Logger | null) {
         this.connection = ch;
         this.logger = logger;
     }
@@ -352,8 +352,10 @@ export class Query {
         params: Record<string, string | number | undefined> = {}
     ): Promise<Response> {
         const sql = this.generateSql();
-        this.logger.info('ClickHouse query template: ' + sql);
-        this.logger.info('ClickHouse query SQL: ' + this.replaceParamsWithValues(sql, params));
+        if(this.logger !== null) {
+            this.logger.info('ClickHouse query template: ' + sql);
+            this.logger.info('ClickHouse query SQL: ' + this.replaceParamsWithValues(sql, params));
+        }
         return await (this.connection.query(sql, {params}).toPromise() as Promise<Response>);
     }
 

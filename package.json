@@ -1,9 +1,22 @@
 {
   "name": "clickhouse-query",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "ClickHouse Query is intuitive query builder to overcome the complexity of ClickHouse SQL syntax.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MPLens/clickhouse-query"
+  },
+  "bugs": {
+    "url": "https://github.com/MPLens/clickhouse-query/issues"
+  },
+  "keywords": [
+    "clickhouse",
+    "sql",
+    "node"
+  ],
   "author": "MPLens",
   "license": "MIT",
   "scripts": {

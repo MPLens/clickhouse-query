@@ -2,6 +2,11 @@
 
 ClickHouse Query is intuitive query builder to overcome the complexity of [ClickHouse](https://clickhouse.com/) SQL syntax.
 
+[![npm version](https://img.shields.io/npm/v/clickhouse-query.svg?style=flat-square)](https://www.npmjs.org/package/clickhouse-query)
+[![install size](https://img.shields.io/badge/dynamic/json?url=https://packagephobia.com/v2/api.json?p=clickhouse-query&query=$.install.pretty&label=install%20size&style=flat-square)](https://packagephobia.now.sh/result?p=clickhouse-query)
+[![npm downloads](https://img.shields.io/npm/dm/clickhouse-query.svg?style=flat-square)](https://npm-stat.com/charts.html?package=clickhouse-query)
+
+
 ## Features
 
 - Sub-queries
@@ -9,14 +14,14 @@ ClickHouse Query is intuitive query builder to overcome the complexity of [Click
 - Query aliases
 - SELECT
 - WITH clause
-- JOINs
+- JOINs (all types)
 - WHERE/grouped WHERE
 - GROUP BY
 - ORDER BY
 - LIMIT 
 - OFFSET
 - Helper functions, e.g. `fx.avg()`, `fx.countIf()`, etc
-- Custom SQL expressions
+- Custom SQL expressions with `expr()`
 
 ## Usage
 
@@ -52,7 +57,7 @@ const clickhouse = new ClickHouse({
     format: 'json',
     raw: false,
 });
-const logger = winston.createLogger();
+const logger = winston.createLogger(); // not required, you can pass as null
 const builder = new QueryBuilder(clickhouse, logger);
 const users = await builder.query()
     .select('email')
@@ -116,7 +121,7 @@ await builder.query()
     )
     .as('m')
     .execute();
-// Executes: (SELECT ip FROM metriks) AS m
+// Executes: (SELECT ip FROM metrics) AS m
 ```
 
 ### FROM
@@ -268,20 +273,22 @@ await builder.query()
 
 ### Helper Functions 
 
-Use `fx` helper to access ClickHouse functions.
+Use `fx` helper to access ClickHouse functions. 
+
+All helpers are simply wrappers which add extra syntax sugaring to help your IDE hint function arguments.
 
 ```ts
 import {fx} from 'clickhouse-query';
 ```
 
-Example usage:
+Usage example:
 
 ```ts
 import {fx} from 'clickhouse-query';
 
 await builder.query()
     .select([
-        fx.anyLast(expr('created_date'))
+        fx.anyLast('created_date')
     ])
     .from('users')
     .execute();
@@ -308,6 +315,10 @@ List of available helpers:
 - `subtractDays`
 - `positionCaseInsensitive`
 - `translateUTF8`
+
+### More examples 
+
+For further query examples you can check `__tests__` folder. 
 
 ## Tests
 
