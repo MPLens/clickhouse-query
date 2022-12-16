@@ -416,9 +416,51 @@ describe('Query', () => {
                         expr('arrayMap(x -> toDateTime(x), range(toUInt32(start), toUInt32(end), 3600))')
                     )
                 ])
-                .as('hh')
                 .generateSql();
-            expect(sql).toBe(`WITH toStartOfDay(toDate('2021-01-01')) AS start, toStartOfDay(toDate('2021-01-02')) AS end SELECT arrayJoin(arrayMap(x -> toDateTime(x), range(toUInt32(start), toUInt32(end), 3600))) AS hh`);
+            expect(sql).toBe(`WITH toStartOfDay(toDate('2021-01-01')) AS start, toStartOfDay(toDate('2021-01-02')) AS end SELECT arrayJoin(arrayMap(x -> toDateTime(x), range(toUInt32(start), toUInt32(end), 3600)))`);
+        });
+
+        it('Using constant expression as “variable”', () => {
+            const q = getQuery();
+            const sql = q
+                .with('2019-08-01 15:23:00', 'ts_upper_bound')
+                .select('*')
+                .from('hits')
+                .where('EventDate', '=', expr('toDate(ts_upper_bound)'))
+                .andWhere('EventTime', '<', expr('ts_upper_bound'))
+                .generateSql();
+            expect(sql).toBe(`WITH '2019-08-01 15:23:00' AS ts_upper_bound SELECT * FROM hits WHERE EventDate = toDate(ts_upper_bound) AND EventTime < ts_upper_bound`);
+        });
+
+        it('Evicting an expression result from the SELECT clause column list', () => {
+            const q = getQuery();
+            const sql = q
+                .with([fx.sum(expr('bytes'))], 's')
+                .select([expr('formatReadableSize(s)'), expr('table')])
+                .from('system.parts')
+                .groupBy(['table'])
+                .orderBy([['s', 'ASC']])
+                .generateSql();
+            expect(sql).toBe(`WITH sum(bytes) AS s SELECT formatReadableSize(s), table FROM system.parts GROUP BY table ORDER BY s ASC`);
+        });
+
+        it('Using results of a scalar subquery', () => {
+            const q = getQuery();
+            const q2 = getQuery();
+            const sql = q
+                .with([
+                    q2.select([fx.sum(expr('bytes'))])
+                        .from('system.parts')
+                        .where('active', '=', 1)
+                        .as('total_disk_usage')
+                ])
+                .select([expr('(sum(bytes) / total_disk_usage) * 100 AS table_disk_usage'), expr('table')])
+                .from('system.parts')
+                .groupBy(['table'])
+                .orderBy([['table_disk_usage', 'DESC']])
+                .limit(10)
+                .generateSql();
+            expect(sql).toBe(`WITH (SELECT sum(bytes) FROM system.parts WHERE active = 1) AS total_disk_usage SELECT (sum(bytes) / total_disk_usage) * 100 AS table_disk_usage, table FROM system.parts GROUP BY table ORDER BY table_disk_usage DESC LIMIT 10`);
         });
     });
 
@@ -801,7 +843,7 @@ describe('Query', () => {
     });
 
     describe('LIMIT/OFFSET', () => {
-        it('builds LIMIT condition', () => {
+        it('builds LIMIT and OFFSET parts', () => {
             const query = getQuery();
             const sql = query
                 .select(['id', 'first_name'])
@@ -813,7 +855,7 @@ describe('Query', () => {
             expect(sql).toBe(`SELECT id, first_name FROM users OFFSET 0 ROW FETCH FIRST 10 ROWS ONLY`);
         });
 
-        it('offset is 0 by default', () => {
+        it('LIMIT could be used alone', () => {
             const query = getQuery();
             const sql = query
                 .select(['id', 'first_name'])
@@ -821,7 +863,7 @@ describe('Query', () => {
                 .limit(10)
                 .generateSql();
 
-            expect(sql).toBe(`SELECT id, first_name FROM users OFFSET 0 ROW FETCH FIRST 10 ROWS ONLY`);
+            expect(sql).toBe(`SELECT id, first_name FROM users LIMIT 10`);
         });
     });
 

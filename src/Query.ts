@@ -56,14 +56,14 @@ type JoinOperator =
 export class Query {
     private readonly connection: ClickHouse;
     private readonly logger: Logger | null;
-    private withPart: Selectable | null = null;
+    private withPart: [Selectable | Query | string | null, string | null] = [null, null];
     private selectPart: SelectParams = '*';
     private fromPart: [string | Query, string | null] | null = null;
     private wherePart: Array<WhereCondition | WhereConditionGrouped> = [];
     private groupByPart: Array<string> | null = null;
     private orderByPart: Array<OrderBy> | null = null;
     private limitPart: number | string | null = null;
-    private offsetPart: number | string | null = 0;
+    private offsetPart: number | string | null = null;
     private joinPart: Array<[JoinOperator, Query, string, string]> = [];
     private aliasPart: string | null = null;
 
@@ -72,8 +72,8 @@ export class Query {
         this.logger = logger;
     }
 
-    public with(params: Selectable) {
-        this.withPart = params;
+    public with(params: Selectable | Query, alias: string | null = null) {
+        this.withPart = [params, alias];
         return this;
     }
 
@@ -252,25 +252,37 @@ export class Query {
             sql += ` ORDER BY ${orderClause}`;
         }
 
+
         if (this.offsetPart !== null && this.limitPart !== null) {
             sql += ` OFFSET ${this.offsetPart} ROW FETCH FIRST ${this.limitPart} ROWS ONLY`;
+        } else if(this.offsetPart === null && this.limitPart !== null) {
+            sql += ` LIMIT ${this.limitPart}`;
         }
 
-        if (this.withPart && this.withPart.length > 0) {
-            const withChunks = [];
-            for (let i = 0; i < this.withPart.length; i++) {
-                const part = this.withPart[i];
-                if (part instanceof Query) {
-                    withChunks.push(part.generateSql());
-                } else {
-                    withChunks.push(part);
+
+        if (this.withPart[0]) {
+            const [withPart, alias] = this.withPart;
+            let preparedWithPart: string | null = null;
+            if (Array.isArray(withPart)) {
+                const withChunks = [];
+                for (let i = 0; i < withPart.length; i++) {
+                    const part = withPart[i];
+                    if (part instanceof Query) {
+                        withChunks.push(part.generateSql());
+                    } else {
+                        withChunks.push(part);
+                    }
                 }
+                preparedWithPart = `WITH ${withChunks.join(', ')}`;
+            } else if (typeof withPart === 'string') {
+                preparedWithPart = `WITH '${withPart}'`;
+            } else if (withPart instanceof Query) {
+                preparedWithPart = `WITH ${withPart.generateSql()}`;
             }
-            const withPart = `WITH ${withChunks.join(', ')}`;
-            sql = `${withPart} ${sql}`;
-            if (this.aliasPart) {
-                sql += ` AS ${this.aliasPart}`;
+            if (alias) {
+                preparedWithPart += ` AS ${alias}`;
             }
+            sql = `${preparedWithPart} ${sql}`;
         } else {
             if (this.aliasPart) {
                 sql = `(${sql}) AS ${this.aliasPart}`;
@@ -352,7 +364,7 @@ export class Query {
         params: Record<string, string | number | undefined> = {}
     ): Promise<Response> {
         const sql = this.generateSql();
-        if(this.logger !== null) {
+        if (this.logger !== null) {
             this.logger.info('ClickHouse query template: ' + sql);
             this.logger.info('ClickHouse query SQL: ' + this.replaceParamsWithValues(sql, params));
         }

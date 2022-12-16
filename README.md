@@ -237,7 +237,6 @@ await builder.query()
 // Executes: SELECT id, first_name FROM users AS u INNER JOIN (SELECT user_id FROM posts WHERE id > 1) AS p ON p.user_id = u.user_id
 ```
 
-
 ### LIMIT/OFFSET
 
 ```ts
@@ -266,9 +265,44 @@ await builder.query()
             expr('arrayMap(x -> toDateTime(x), range(toUInt32(start), toUInt32(end), 3600))')
         )
     ])
-    .as('hh')
     .execute();
-// Executes: WITH toStartOfDay(toDate('2021-01-01')) AS start, toStartOfDay(toDate('2021-01-02')) AS end SELECT arrayJoin(arrayMap(x -> toDateTime(x), range(toUInt32(start), toUInt32(end), 3600))) AS hh
+// Executes: WITH toStartOfDay(toDate('2021-01-01')) AS start, toStartOfDay(toDate('2021-01-02')) AS end SELECT arrayJoin(arrayMap(x -> toDateTime(x), range(toUInt32(start), toUInt32(end), 3600)))
+```
+
+Using constant expression as "variable":
+
+```ts
+import {fx} from 'clickhouse-query';
+
+await builder.query()
+    .with('2019-08-01 15:23:00', 'ts_upper_bound')
+    .select('*')
+    .from('hits')
+    .where('EventDate', '=', expr('toDate(ts_upper_bound)'))
+    .andWhere('EventTime', '<', expr('ts_upper_bound'))
+    .execute();
+// Executes: WITH '2019-08-01 15:23:00' AS ts_upper_bound SELECT * FROM hits WHERE EventDate = toDate(ts_upper_bound) AND EventTime < ts_upper_bound
+```
+
+Using results of a scalar subquery:
+
+```ts
+import {fx} from 'clickhouse-query';
+
+await builder.query()
+    .with([
+        q2.select([fx.sum(expr('bytes'))])
+            .from('system.parts')
+            .where('active', '=', 1)
+            .as('total_disk_usage')
+    ])
+    .select([expr('(sum(bytes) / total_disk_usage) * 100 AS table_disk_usage'), expr('table')])
+    .from('system.parts')
+    .groupBy(['table'])
+    .orderBy([['table_disk_usage', 'DESC']])
+    .limit(10)
+    .execute();
+// Executes: WITH (SELECT sum(bytes) FROM system.parts WHERE active = 1) AS total_disk_usage SELECT (sum(bytes) / total_disk_usage) * 100 AS table_disk_usage, table FROM system.parts GROUP BY table ORDER BY table_disk_usage DESC LIMIT 10
 ```
 
 ### Helper Functions 
