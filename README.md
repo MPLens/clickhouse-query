@@ -40,7 +40,7 @@ npm install clickhouse-query
 Once the package is installed, you can import the library using import:
 
 ```ts
-import { fx, expr, Query } from 'clickhouse-query';
+import {fx, expr, Query, QueryBuilder} from 'clickhouse-query';
 ```
 
 ### Quick start
@@ -62,7 +62,7 @@ const builder = new QueryBuilder(clickhouse, logger);
 const users = await builder.query()
     .select('email')
     .from('users')
-    .execute(); 
+    .execute();
 // Executes: SELECT email FROM users
 ```
 
@@ -253,8 +253,6 @@ await builder.query()
 ### WITH
 
 ```ts
-import {fx} from 'clickhouse-query';
-
 await builder.query()
     .with([
         expr("toStartOfDay(toDate('2021-01-01'))").as('start'),
@@ -272,7 +270,7 @@ await builder.query()
 Using constant expression as "variable":
 
 ```ts
-import {fx} from 'clickhouse-query';
+import {expr} from 'clickhouse-query';
 
 await builder.query()
     .with('2019-08-01 15:23:00', 'ts_upper_bound')
@@ -287,7 +285,7 @@ await builder.query()
 Using results of a scalar subquery:
 
 ```ts
-import {fx} from 'clickhouse-query';
+import {fx, expr} from 'clickhouse-query';
 
 await builder.query()
     .with([
@@ -322,11 +320,13 @@ import {fx} from 'clickhouse-query';
 
 await builder.query()
     .select([
-        fx.anyLast('created_date')
+        'user_id',
+        fx.sum('trade_volume').as('volume')
     ])
-    .from('users')
+    .from('user_spending')
+    .groupBy(['user_id'])
     .execute();
-// Executes: SELECT anyLast(created_date) FROM users
+// Executes: SELECT user_id, sum(trade_volume) AS volume FROM user_spending GROUP BY user_id
 ```
 
 List of available helpers: 
