@@ -13,6 +13,7 @@ ClickHouse Query is intuitive query builder to overcome the complexity of [Click
 - Table aliases
 - Query aliases
 - SELECT
+- INSERT
 - WITH clause
 - JOINs (all types)
 - WHERE/grouped WHERE

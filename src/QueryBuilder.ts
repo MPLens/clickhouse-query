@@ -1,6 +1,8 @@
 import {ClickHouse} from 'clickhouse';
 import {Query} from './Query';
 import {Logger} from 'winston';
+import {InsertQuery} from './InsertQuery';
+
 
 export class QueryBuilder {
     private readonly connection: ClickHouse;
@@ -13,5 +15,9 @@ export class QueryBuilder {
 
     public query(): Query {
         return new Query(this.connection, this.logger);
+    }
+
+    public insert(): InsertQuery {
+        return new InsertQuery(this.connection, this.logger);
     }
 }
