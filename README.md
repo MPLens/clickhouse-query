@@ -1,11 +1,32 @@
 # ClickHouse Query
 
-ClickHouse Query is intuitive query builder to overcome the complexity of [ClickHouse](https://clickhouse.com/) SQL syntax.
+ClickHouse Query is intuitive query builder to overcome the complexity of [ClickHouse](https://clickhouse.com/) SQL
+syntax.
 
 [![npm version](https://img.shields.io/npm/v/clickhouse-query.svg?style=flat-square)](https://www.npmjs.org/package/clickhouse-query)
 [![install size](https://img.shields.io/badge/dynamic/json?url=https://packagephobia.com/v2/api.json?p=clickhouse-query&query=$.install.pretty&label=install%20size&style=flat-square)](https://packagephobia.now.sh/result?p=clickhouse-query)
 [![npm downloads](https://img.shields.io/npm/dm/clickhouse-query.svg?style=flat-square)](https://npm-stat.com/charts.html?package=clickhouse-query)
 
+## Table of Contents
+
+<!-- toc -->
+
+- [Features](#features)
+- [Usage](#usage)
+  * [Installation](#installation)
+  * [Quick start](#quick-start)
+- [INSERT](#insert)
+- [SELECT](#select)
+  * [FROM](#from)
+  * [WHERE](#where)
+  * [JOIN](#join)
+  * [LIMIT/OFFSET](#limitoffset)
+  * [WITH](#with)
+  * [Helper Functions](#helper-functions)
+  * [More examples](#more-examples)
+- [Tests](#tests)
+
+<!-- tocstop -->
 
 ## Features
 
@@ -19,7 +40,7 @@ ClickHouse Query is intuitive query builder to overcome the complexity of [Click
 - WHERE/grouped WHERE
 - GROUP BY
 - ORDER BY
-- LIMIT 
+- LIMIT
 - OFFSET
 - Helper functions, e.g. `fx.avg()`, `fx.countIf()`, etc
 - Custom SQL expressions with `expr()`
@@ -29,11 +50,13 @@ ClickHouse Query is intuitive query builder to overcome the complexity of [Click
 ### Installation
 
 Using yarn:
+
 ```bash
 yarn add clickhouse-query
 ```
 
-Using npm: 
+Using npm:
+
 ```bash
 npm install clickhouse-query
 ```
@@ -67,7 +90,7 @@ const users = await builder.query()
 // Executes: SELECT email FROM users
 ```
 
-TypeScript example: 
+TypeScript example:
 
 ```ts
 // ...
@@ -78,9 +101,60 @@ const users = await builder.query()
 // Executes: SELECT email FROM users
 ```
 
-### SELECT
+## INSERT
+
+Insert single row:
+
+```ts
+await builder.query()
+    .into('metrics')
+    .columns(['id', 'ip', 'created_date'])
+    .values({id: 1, ip: '127.0.0.1', created_date: '2022-12-20'})
+    .execute();
+// Executes: INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20')
+```
+
+Definition of `columns()` is optional, you can use `values()` without it. `values()` will use the first row to determine
+the columns.
+
+```ts
+await builder.query()
+    .into('metrics')
+    .values({id: 1, ip: '127.0.0.1', created_date: '2022-12-20'})
+    .execute();
+// Executes: INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20')
+```
+
+You can chain multiple rows using `values()`:
+
+```ts
+await builder.query()
+    .into('metrics')
+    .columns(['id', 'ip', 'created_date'])
+    .values({id: 1, ip: '127.0.0.1', created_date: '2022-12-20'})
+    .values({id: 2, ip: '127.0.0.2', created_date: '2022-12-21'})
+    .execute();
+// Executes: INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20'), (2, '127.0.0.2', '2022-12-21')
+```
+
+You can write bulk rows: 
+
+```ts
+await builder.query()
+    .into('metrics')
+    .columns(['id', 'ip', 'created_date'])
+    .values([
+        {id: 1, ip: '127.0.0.1', created_date: '2022-12-20'},
+        {id: 2, ip: '127.0.0.2', created_date: '2022-12-21'}
+    ])
+    .execute();
+// Executes: INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20'), (2, '127.0.0.2', '2022-12-21')
+```
+
+## SELECT
 
 Select single column:
+
 ```ts
 await builder.query()
     .select('id')
@@ -90,6 +164,7 @@ await builder.query()
 ```
 
 Select multiple columns:
+
 ```ts
 await builder.query()
     .select(['id', 'email'])
@@ -99,6 +174,7 @@ await builder.query()
 ```
 
 Select from sub-query:
+
 ```ts
 await builder.query()
     .select(['ip'])
@@ -112,6 +188,7 @@ await builder.query()
 ```
 
 Select with alias:
+
 ```ts
 await builder.query()
     .select(['ip'])
@@ -128,6 +205,7 @@ await builder.query()
 ### FROM
 
 Select with table alias:
+
 ```ts
 await builder.query()
     .select('id')
@@ -138,7 +216,8 @@ await builder.query()
 
 ### WHERE
 
-The following operators are supported: 
+The following operators are supported:
+
 - `=`
 - `<`
 - `>`
@@ -153,8 +232,8 @@ The following operators are supported:
 - `IS NULL`
 - `IS NOT NULL`
 
-
 Simple condition:
+
 ```ts
 await builder.query()
     .select(['email'])
@@ -165,6 +244,7 @@ await builder.query()
 ```
 
 Where with AND condition:
+
 ```ts
 await builder.query()
     .select(['email'])
@@ -176,6 +256,7 @@ await builder.query()
 ```
 
 Numeric `BETWEEN` condition:
+
 ```ts
 await builder.query()
     .select(['email'])
@@ -186,6 +267,7 @@ await builder.query()
 ```
 
 Date `BETWEEN` condition:
+
 ```ts
 await builder.query()
     .select(['email'])
@@ -196,6 +278,7 @@ await builder.query()
 ```
 
 `IN`/`NOT IN` condition:
+
 ```ts
 await builder.query()
     .select(['email'])
@@ -206,6 +289,7 @@ await builder.query()
 ```
 
 `LIKE`/`NOT LIKE` condition:
+
 ```ts
 await builder.query()
     .select(['email'])
@@ -217,7 +301,7 @@ await builder.query()
 
 ### JOIN
 
-By default, if you provide `JOIN`, `INNER JOIN` would be used. 
+By default, if you provide `JOIN`, `INNER JOIN` would be used.
 
 You may chain as multiple joins if needed.
 
@@ -249,7 +333,6 @@ await builder.query()
     .generateSql();
 // Executes: SELECT id, first_name FROM users OFFSET 0 ROW FETCH FIRST 10 ROWS ONLY
 ```
-
 
 ### WITH
 
@@ -304,9 +387,9 @@ await builder.query()
 // Executes: WITH (SELECT sum(bytes) FROM system.parts WHERE active = 1) AS total_disk_usage SELECT (sum(bytes) / total_disk_usage) * 100 AS table_disk_usage, table FROM system.parts GROUP BY table ORDER BY table_disk_usage DESC LIMIT 10
 ```
 
-### Helper Functions 
+### Helper Functions
 
-Use `fx` helper to access ClickHouse functions. 
+Use `fx` helper to access ClickHouse functions.
 
 All helpers are simply wrappers which add extra syntax sugaring to help your IDE hint function arguments.
 
@@ -330,7 +413,8 @@ await builder.query()
 // Executes: SELECT user_id, sum(trade_volume) AS volume FROM user_spending GROUP BY user_id
 ```
 
-List of available helpers: 
+List of available helpers:
+
 - `anyLast`
 - `anyLastPos`
 - `groupArray`
@@ -351,15 +435,16 @@ List of available helpers:
 - `positionCaseInsensitive`
 - `translateUTF8`
 
-### More examples 
+### More examples
 
-For further query examples you can check `__tests__` folder. 
+For further query examples you can check `__tests__` folder.
 
 ## Tests
 
 Tests could be found in `__tests__` folder.
 
 Run tests:
+
 ```bash
 yarn tests
 ```

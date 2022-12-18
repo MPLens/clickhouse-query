@@ -23,7 +23,8 @@
     "test": "jest",
     "prepublish": "npm run build",
     "test-publish": "npm pack",
-    "publish": "npm publish"
+    "publish": "npm publish",
+    "toc": "./node_modules/.bin/markdown-toc README.md -i "
   },
   "dependencies": {
     "clickhouse": "^2.6.0",
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@types/jest": "^29.2.3",
     "jest": "^29.3.1",
+    "markdown-toc": "^1.2.0",
     "ts-jest": "^29.0.3",
     "ts-node": "^10.9.1",
     "typescript": "^4.9.3"

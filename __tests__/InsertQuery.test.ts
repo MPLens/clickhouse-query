@@ -53,10 +53,10 @@ describe('InsertQuery', () => {
             .into('metrics')
             .columns(['id', 'ip', 'created_date'])
             .values({id: 1, ip: '127.0.0.1', created_date: '2022-12-20'})
-            .values({id: 2, ip: '127.0.0.1', created_date: '2022-12-21'})
+            .values({id: 2, ip: '127.0.0.2', created_date: '2022-12-21'})
             .generateSql();
 
-        expect(sql).toBe(`INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20'), (2, '127.0.0.1', '2022-12-21')`);
+        expect(sql).toBe(`INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20'), (2, '127.0.0.2', '2022-12-21')`);
     });
 
     it('generates multiple rows as bulk', () => {
@@ -66,11 +66,11 @@ describe('InsertQuery', () => {
             .columns(['id', 'ip', 'created_date'])
             .values([
                 {id: 1, ip: '127.0.0.1', created_date: '2022-12-20'},
-                {id: 2, ip: '127.0.0.1', created_date: '2022-12-21'}
+                {id: 2, ip: '127.0.0.2', created_date: '2022-12-21'}
             ])
             .generateSql();
 
-        expect(sql).toBe(`INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20'), (2, '127.0.0.1', '2022-12-21')`);
+        expect(sql).toBe(`INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20'), (2, '127.0.0.2', '2022-12-21')`);
     });
 
     it('generates multiple rows as bulk (chained)', () => {
