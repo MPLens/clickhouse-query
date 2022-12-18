@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.4.0 - 2022-12-18
+
+### Added
+- Added support for `INSERT INTO` queries + unit tests.
+- Added examples to documentation for `INSERT INTO` queries.
+- Added table of contents to documentation for easier navigation.
+
 ## v1.3.0 - 2022-12-16
 
 ### Changed
