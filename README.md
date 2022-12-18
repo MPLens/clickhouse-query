@@ -13,17 +13,17 @@ syntax.
 
 - [Features](#features)
 - [Usage](#usage)
-  * [Installation](#installation)
-  * [Quick start](#quick-start)
+    * [Installation](#installation)
+    * [Quick start](#quick-start)
 - [INSERT](#insert)
 - [SELECT](#select)
-  * [FROM](#from)
-  * [WHERE](#where)
-  * [JOIN](#join)
-  * [LIMIT/OFFSET](#limitoffset)
-  * [WITH](#with)
-  * [Helper Functions](#helper-functions)
-  * [More examples](#more-examples)
+    * [FROM](#from)
+    * [WHERE](#where)
+    * [JOIN](#join)
+    * [LIMIT/OFFSET](#limitoffset)
+    * [WITH](#with)
+    * [Helper Functions](#helper-functions)
+    * [More examples](#more-examples)
 - [Tests](#tests)
 
 <!-- tocstop -->
@@ -103,10 +103,12 @@ const users = await builder.query()
 
 ## INSERT
 
+Builder has special method called `insert()` to handle INSERT queries. Below you may find a couple of examples.
+
 Insert single row:
 
 ```ts
-await builder.query()
+await builder.insert()
     .into('metrics')
     .columns(['id', 'ip', 'created_date'])
     .values({id: 1, ip: '127.0.0.1', created_date: '2022-12-20'})
@@ -118,7 +120,7 @@ Definition of `columns()` is optional, you can use `values()` without it. `value
 the columns.
 
 ```ts
-await builder.query()
+await builder.insert()
     .into('metrics')
     .values({id: 1, ip: '127.0.0.1', created_date: '2022-12-20'})
     .execute();
@@ -128,7 +130,7 @@ await builder.query()
 You can chain multiple rows using `values()`:
 
 ```ts
-await builder.query()
+await builder.insert()
     .into('metrics')
     .columns(['id', 'ip', 'created_date'])
     .values({id: 1, ip: '127.0.0.1', created_date: '2022-12-20'})
@@ -137,10 +139,10 @@ await builder.query()
 // Executes: INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20'), (2, '127.0.0.2', '2022-12-21')
 ```
 
-You can write bulk rows: 
+You can write bulk rows:
 
 ```ts
-await builder.query()
+await builder.insert()
     .into('metrics')
     .columns(['id', 'ip', 'created_date'])
     .values([
@@ -152,6 +154,8 @@ await builder.query()
 ```
 
 ## SELECT
+
+Builder has special method called `query()` which allows you to build SELECT queries. Below you may find a couple of examples.
 
 Select single column:
 
