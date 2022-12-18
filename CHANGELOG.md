@@ -9,6 +9,9 @@ All notable changes to this project will be documented in this file.
 - Added examples to documentation for `INSERT INTO` queries.
 - Added table of contents to documentation for easier navigation.
 
+### Fixed
+- Fixed bug where it wasn't possible to have WITH inside WITH statement
+
 ## v1.3.0 - 2022-12-16
 
 ### Changed

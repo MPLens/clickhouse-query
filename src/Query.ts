@@ -255,7 +255,7 @@ export class Query {
 
         if (this.offsetPart !== null && this.limitPart !== null) {
             sql += ` OFFSET ${this.offsetPart} ROW FETCH FIRST ${this.limitPart} ROWS ONLY`;
-        } else if(this.offsetPart === null && this.limitPart !== null) {
+        } else if (this.offsetPart === null && this.limitPart !== null) {
             sql += ` LIMIT ${this.limitPart}`;
         }
 
@@ -268,7 +268,12 @@ export class Query {
                 for (let i = 0; i < withPart.length; i++) {
                     const part = withPart[i];
                     if (part instanceof Query) {
-                        withChunks.push(part.generateSql());
+                        const hasInnerWithStatement = !!part.withPart[0];
+                        if(hasInnerWithStatement) {
+                            withChunks.push(`(${part.generateSql()})`);
+                        } else {
+                            withChunks.push(part.generateSql())
+                        }
                     } else {
                         withChunks.push(part);
                     }
@@ -277,10 +282,15 @@ export class Query {
             } else if (typeof withPart === 'string') {
                 preparedWithPart = `WITH '${withPart}'`;
             } else if (withPart instanceof Query) {
-                preparedWithPart = `WITH ${withPart.generateSql()}`;
+                const hasInnerWithStatement = withPart.withPart[0];
+                if (hasInnerWithStatement) {
+                    preparedWithPart = `WITH (${withPart.generateSql()})`;
+                } else {
+                    preparedWithPart = `WITH ${withPart.generateSql()}`;
+                }
             }
             if (alias) {
-                preparedWithPart += ` AS ${alias}`;
+                preparedWithPart = `${preparedWithPart} AS ${alias}`;
             }
             sql = `${preparedWithPart} ${sql}`;
         } else {

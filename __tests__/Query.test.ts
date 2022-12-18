@@ -462,6 +462,50 @@ describe('Query', () => {
                 .generateSql();
             expect(sql).toBe(`WITH (SELECT sum(bytes) FROM system.parts WHERE active = 1) AS total_disk_usage SELECT (sum(bytes) / total_disk_usage) * 100 AS table_disk_usage, table FROM system.parts GROUP BY table ORDER BY table_disk_usage DESC LIMIT 10`);
         });
+
+        it('Using WITH within WITH as query', () => {
+            const q = getQuery();
+            const q2 = getQuery();
+            const sql = q
+                .with(
+                    q2
+                        .with([expr('2022-12-11').as('some_date')])
+                        .select([fx.sum(expr('bytes'))])
+                        .from('system.parts')
+                        .where('active', '=', 1),
+                    'alias'
+                )
+                .select([expr('(sum(bytes) / total_disk_usage) * 100 AS table_disk_usage'), expr('table')])
+                .from('system.parts')
+                .groupBy(['table'])
+                .orderBy([['table_disk_usage', 'DESC']])
+                .limit(10)
+                .generateSql();
+            expect(sql).toBe(`WITH (WITH 2022-12-11 AS some_date SELECT sum(bytes) FROM system.parts WHERE active = 1) AS alias SELECT (sum(bytes) / total_disk_usage) * 100 AS table_disk_usage, table FROM system.parts GROUP BY table ORDER BY table_disk_usage DESC LIMIT 10`);
+        });
+
+        it('Using WITH within WITH as list of params', () => {
+            const q = getQuery();
+            const q2 = getQuery();
+            const sql = q
+                .with(
+                    [
+                        q2
+                            .with([expr('2022-12-11').as('some_date')])
+                            .select([fx.sum(expr('bytes'))])
+                            .from('system.parts')
+                            .where('active', '=', 1)
+                    ],
+                    'alias'
+                )
+                .select([expr('(sum(bytes) / total_disk_usage) * 100 AS table_disk_usage'), expr('table')])
+                .from('system.parts')
+                .groupBy(['table'])
+                .orderBy([['table_disk_usage', 'DESC']])
+                .limit(10)
+                .generateSql();
+            expect(sql).toBe(`WITH (WITH 2022-12-11 AS some_date SELECT sum(bytes) FROM system.parts WHERE active = 1) AS alias SELECT (sum(bytes) / total_disk_usage) * 100 AS table_disk_usage, table FROM system.parts GROUP BY table ORDER BY table_disk_usage DESC LIMIT 10`);
+        });
     });
 
     describe('SELECT', () => {
@@ -550,11 +594,11 @@ describe('Query', () => {
             const sql = q
                 .select(['id', 'email'])
                 .from(
-                getQuery()
-                    .select(['id', 'email'])
-                    .from('users')
-                    .where('status', '>', 10)
-            ).generateSql();
+                    getQuery()
+                        .select(['id', 'email'])
+                        .from('users')
+                        .where('status', '>', 10)
+                ).generateSql();
             expect(sql).toBe('SELECT id, email FROM (SELECT id, email FROM users WHERE status > 10)');
         });
     })
