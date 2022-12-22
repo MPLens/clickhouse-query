@@ -139,7 +139,7 @@ await builder.insert()
 // Executes: INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20'), (2, '127.0.0.2', '2022-12-21')
 ```
 
-You can write bulk rows:
+You can write bulk rows (same as above):
 
 ```ts
 await builder.insert()
@@ -151,6 +151,41 @@ await builder.insert()
     ])
     .execute();
 // Executes: INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20'), (2, '127.0.0.2', '2022-12-21')
+```
+
+## DELETE
+
+Builder has special method called `delete()` to handle DELETE queries. Below you may find a couple of examples.
+
+
+```ts
+await builder.delete()
+    .table('metrics')
+    .where('created_date', '>', '2022-12-20')
+    .execute();
+// Executes: ALTER TABLE metrics DELETE WHERE created_date > '2022-12-20'
+```
+
+If you want to delete everything from table use it as following: 
+
+```ts
+await builder.delete()
+    .table('metrics')
+    .all()
+    .execute();
+// Executes: ALTER TABLE metrics DELETE WHERE 1 = 1
+```
+
+Alternatively, you write example above as following: 
+
+```ts
+import {expr} from 'clickhouse-query';
+
+await builder.delete()
+    .table('metrics')
+    .where(expr('1'), '=', 1)
+    .execute();
+// Executes: ALTER TABLE metrics DELETE WHERE 1 = 1
 ```
 
 ## SELECT
