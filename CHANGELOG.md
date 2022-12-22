@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added support for `DELETE` queries + unit tests
 - Added example to documentation for `DELETE` queries
+- Added support for `UPDATE` queries + unit tests
+- Added example to documentation for `UPDATE` queries
 
 ## v1.4.0 - 2022-12-18
 

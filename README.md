@@ -13,17 +13,19 @@ syntax.
 
 - [Features](#features)
 - [Usage](#usage)
-    * [Installation](#installation)
-    * [Quick start](#quick-start)
+  * [Installation](#installation)
+  * [Quick start](#quick-start)
 - [INSERT](#insert)
+- [DELETE](#delete)
+- [UPDATE](#update)
 - [SELECT](#select)
-    * [FROM](#from)
-    * [WHERE](#where)
-    * [JOIN](#join)
-    * [LIMIT/OFFSET](#limitoffset)
-    * [WITH](#with)
-    * [Helper Functions](#helper-functions)
-    * [More examples](#more-examples)
+  * [FROM](#from)
+  * [WHERE](#where)
+  * [JOIN](#join)
+  * [LIMIT/OFFSET](#limitoffset)
+  * [WITH](#with)
+  * [Helper Functions](#helper-functions)
+  * [More examples](#more-examples)
 - [Tests](#tests)
 
 <!-- tocstop -->
@@ -186,6 +188,58 @@ await builder.delete()
     .where(expr('1'), '=', 1)
     .execute();
 // Executes: ALTER TABLE metrics DELETE WHERE 1 = 1
+```
+
+## UPDATE
+
+Builder has special method called `update()` to handle UPDATE queries. Below you may find a couple of examples.
+
+Update single column:
+
+```ts
+await builder.update()
+    .table('metrics')
+    .value('ip', '127.0.0.1')
+    .where('ip', '=', '127.0.0.0')
+    .execute();
+// Executes: ALTER TABLE metrics UPDATE ip = '127.0.0.1' WHERE ip = '127.0.0.0'
+```
+
+Update multiple columns chained:
+
+```ts
+await builder.update()
+    .table('metrics')
+    .value('ip', '127.0.0.1')
+    .value('user_agent', 'Googlebot/2.1')
+    .where('ip', '=', '127.0.0.0')
+    .execute();
+// Executes: ALTER TABLE metrics UPDATE ip = '127.0.0.1', user_agent = 'Googlebot/2.1' WHERE ip = '127.0.0.0'
+```
+
+Alternatively, you can use `values()` to update multiple columns:
+
+```ts
+await builder.update()
+    .table('metrics')
+    .values([
+      ['ip', '127.0.0.1'],
+      ['user_agent', 'Googlebot/2.1'],
+    ])
+    .where('ip', '=', '127.0.0.0')
+    .execute();
+// Executes: ALTER TABLE metrics UPDATE ip = '127.0.0.1', user_agent = 'Googlebot/2.1' WHERE ip = '127.0.0.0'
+```
+
+You can pass array as value, it would be properly converted:
+
+```ts
+await builder.update()
+    .table('metrics')
+    .value('ips', ['127.0.0.1', '127.0.0.2'])
+    .where('id', '=', 1)
+    .execute();
+// Executes: ALTER TABLE metrics UPDATE ips = ['127.0.0.1', '127.0.0.2'] WHERE id = 1
 ```
 
 ## SELECT
