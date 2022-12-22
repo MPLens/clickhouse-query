@@ -30,7 +30,7 @@ export class DeleteQuery extends FilterableQuery {
 
     public generateSql(): string {
         if (this.tablePart === null) {
-            throw new Error('No table specified to insert into');
+            throw new Error('No table specified to delete');
         }
         return `ALTER TABLE ${this.tablePart} DELETE ${this.generateWhere()}`;
     }

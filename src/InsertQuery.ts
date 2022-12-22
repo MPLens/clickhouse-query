@@ -58,7 +58,6 @@ export class InsertQuery {
     }
 
     public generateSql(): string {
-        const self = this;
         if (this.intoPart === null) {
             throw new Error('No table specified to insert into');
         }
