@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.6.0 - 2022-12-24
+
+### Added
+- Added support to join directly with table, previously supported only subquery
+
 ## v1.5.0 - 2022-12-22
 
 ### Added

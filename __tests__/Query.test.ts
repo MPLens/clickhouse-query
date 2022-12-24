@@ -648,6 +648,22 @@ describe('Query', () => {
             expect(sql).toBe(`SELECT id, first_name FROM users AS u INNER JOIN (SELECT user_id FROM posts WHERE id > 1) AS p ON p.user_id = u.user_id`);
         });
 
+        it('simple join on table', () => {
+            const query = getQuery();
+            const sql = query
+                .select(['id', 'first_name'])
+                .from('users', 'u')
+                .join(
+                    'INNER JOIN',
+                    'posts',
+                    'p',
+                    'p.user_id = u.user_id'
+                )
+                .generateSql();
+
+            expect(sql).toBe(`SELECT id, first_name FROM users AS u INNER JOIN posts p ON p.user_id = u.user_id`);
+        });
+
         it('uses INNER JOIN as default', () => {
             const query = getQuery();
             const sql = query

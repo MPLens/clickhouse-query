@@ -34,7 +34,7 @@ export class Query extends FilterableQuery {
     private orderByPart: Array<OrderBy> | null = null;
     private limitPart: number | string | null = null;
     private offsetPart: number | string | null = null;
-    private joinPart: Array<[JoinOperator, Query, string, string]> = [];
+    private joinPart: Array<[JoinOperator, Query | string, string, string]> = [];
     private aliasPart: string | null = null;
 
     constructor(ch: ClickHouse, logger: Logger | null) {
@@ -63,11 +63,11 @@ export class Query extends FilterableQuery {
         return this;
     }
 
-    public join(operator: JoinOperator, query: Query, alias: string, on: string) {
+    public join(operator: JoinOperator, rightTable: Query | string, alias: string, on: string) {
         if (operator === 'JOIN') {
             operator = 'INNER JOIN';
         }
-        this.joinPart.push([operator, query, alias, on]);
+        this.joinPart.push([operator, rightTable, alias, on]);
         return this;
     }
 
@@ -130,14 +130,14 @@ export class Query extends FilterableQuery {
         }
 
         if (this.joinPart.length > 0) {
-            this.joinPart.forEach(([operator, query, alias, on]) => {
+            this.joinPart.forEach(([operator, rightTable, alias, on]) => {
                 sql += ` ${operator} `;
-                if (query instanceof Query) {
-                    sql += '(' + query.generateSql() + ')';
+                if (rightTable instanceof Query) {
+                    sql += `(${rightTable.generateSql()}) AS ${alias}`;
                 } else {
-                    sql += query;
+                    sql += `${rightTable} ${alias}`;
                 }
-                sql += ` AS ${alias} ON ${on}`;
+                sql += ` ON ${on}`;
             });
         }
 
@@ -171,7 +171,7 @@ export class Query extends FilterableQuery {
                     const part = withPart[i];
                     if (part instanceof Query) {
                         const hasInnerWithStatement = !!part.withPart[0];
-                        if(hasInnerWithStatement) {
+                        if (hasInnerWithStatement) {
                             withChunks.push(`(${part.generateSql()})`);
                         } else {
                             withChunks.push(part.generateSql())
