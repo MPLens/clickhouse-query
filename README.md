@@ -15,6 +15,7 @@ syntax.
 - [Usage](#usage)
   * [Installation](#installation)
   * [Quick start](#quick-start)
+- [CREATE TABLE](#create-table)
 - [INSERT](#insert)
 - [DELETE](#delete)
 - [UPDATE](#update)
