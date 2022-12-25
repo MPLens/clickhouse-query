@@ -4,6 +4,7 @@ import {Logger} from 'winston';
 import {InsertQuery} from './InsertQuery';
 import {DeleteQuery} from './DeleteQuery';
 import {UpdateQuery} from './UpdateQuery';
+import {CreateTableQuery} from './CreateTableQuery';
 
 
 export class QueryBuilder {
@@ -29,5 +30,9 @@ export class QueryBuilder {
 
     public update(): UpdateQuery {
         return new UpdateQuery(this.connection, this.logger);
+    }
+
+    public createTable(): CreateTableQuery {
+        return new CreateTableQuery(this.connection, this.logger);
     }
 }

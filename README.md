@@ -63,7 +63,7 @@ Using npm:
 npm install clickhouse-query
 ```
 
-Once the package is installed, you can import the library using import:
+Once the package is installed, you can import the library as follows:
 
 ```ts
 import {fx, expr, Query, QueryBuilder} from 'clickhouse-query';
@@ -101,6 +101,56 @@ const users = await builder.query()
     .from('users')
     .execute<Array<{ email: string }>>();
 // Executes: SELECT email FROM users
+```
+
+## CREATE TABLE
+
+Creating tables as simple as this:
+
+```ts
+await builder.createTable()
+    .table('table_name')
+    .column('column1', createTable.string())
+    .engine('Memory')
+    .execute();
+// Executes: CREATE TABLE table_name(column1 String) ENGINE = Memory
+```
+
+Also, you can provide multiple columns to create: 
+
+```ts
+await builder.createTable()
+    .table('table_name')
+    .column('column1', createTable.string())
+    .column('column_date', createTable.dateTime())
+    .engine('Memory')
+    .execute();
+// Executes: CREATE TABLE table_name(column1 String, column_date DateTime) ENGINE = Memory
+```
+
+Create table with `ORDER BY`:
+
+```ts
+await builder.createTable()
+    .table('table_name')
+    .column('column1', createTable.string())
+    .column('column_date', createTable.dateTime())
+    .engine('MergeTree()')
+    .orderBy(['column1', 'column_date'])
+    .execute();
+// Executes: CREATE TABLE table_name(column1 String, column_date DateTime) ENGINE = MergeTree() ORDER BY (column1, column_date)
+```
+
+Create table with `IF NOT EXISTS`:
+
+```ts
+await builder.createTable()
+    .table('table_name')
+    .ifNotExists()
+    .column('column1', createTable.string())
+    .engine('Memory')
+    .execute();
+// Executes: CREATE TABLE IF NOT EXISTS table_name(column1 String) ENGINE = Memory
 ```
 
 ## INSERT

@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.6.0 - 2022-12-25
+
+- Added support for `CREATE TABLE` + unit tests 
+- Added example to documentation for `CREATE TABLE` queries
+
 ## v1.5.0 - 2022-12-22
 
 ### Added
