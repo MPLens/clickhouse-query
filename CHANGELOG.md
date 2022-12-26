@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.7.1 - 2022-12-26
+
+- Added support for `FINAL` modifier in `SELECT` queries, mainly used for ReplacingMergeTree engine 
+- Fixed alias usage for tables in `SELECT` queries
+- Fixed unit tests for `CREATE TABLE` queries
+
 ## v1.7.0 - 2022-12-25
 
 - Added support for `CREATE TABLE` + unit tests

@@ -580,7 +580,7 @@ describe('Query', () => {
         it('works without table alias', () => {
             const query = getQuery();
             const sql = query.from('users', 'p').generateSql();
-            expect(sql).toBe('SELECT * FROM users AS p');
+            expect(sql).toBe('SELECT * FROM users p');
         });
 
         it('adds alias to table', () => {
@@ -601,7 +601,29 @@ describe('Query', () => {
                 ).generateSql();
             expect(sql).toBe('SELECT id, email FROM (SELECT id, email FROM users WHERE status > 10)');
         });
-    })
+    });
+
+    describe('FINAL', () => {
+        it('adds FINAL to query', () => {
+            const query = getQuery();
+            const sql = query
+                .select('*')
+                .from('metrics')
+                .final()
+                .generateSql();
+            expect(sql).toBe('SELECT * FROM metrics FINAL');
+        });
+
+        it('adds FINAL with table alias properly', () => {
+            const query = getQuery();
+            const sql = query
+                .select('*')
+                .from('metrics', 'm')
+                .final()
+                .generateSql();
+            expect(sql).toBe('SELECT * FROM metrics m FINAL');
+        });
+    });
 
     describe('LIMIT/OFFSET', () => {
         it('builds LIMIT and OFFSET parts', () => {
@@ -645,7 +667,7 @@ describe('Query', () => {
                 )
                 .generateSql();
 
-            expect(sql).toBe(`SELECT id, first_name FROM users AS u INNER JOIN (SELECT user_id FROM posts WHERE id > 1) AS p ON p.user_id = u.user_id`);
+            expect(sql).toBe(`SELECT id, first_name FROM users u INNER JOIN (SELECT user_id FROM posts WHERE id > 1) AS p ON p.user_id = u.user_id`);
         });
 
         it('simple join on table', () => {
@@ -661,7 +683,7 @@ describe('Query', () => {
                 )
                 .generateSql();
 
-            expect(sql).toBe(`SELECT id, first_name FROM users AS u INNER JOIN posts p ON p.user_id = u.user_id`);
+            expect(sql).toBe(`SELECT id, first_name FROM users u INNER JOIN posts p ON p.user_id = u.user_id`);
         });
 
         it('uses INNER JOIN as default', () => {
@@ -680,7 +702,7 @@ describe('Query', () => {
                 )
                 .generateSql();
 
-            expect(sql).toBe(`SELECT id, first_name FROM users AS u INNER JOIN (SELECT user_id FROM posts WHERE id > 1) AS p ON p.user_id = u.user_id`);
+            expect(sql).toBe(`SELECT id, first_name FROM users u INNER JOIN (SELECT user_id FROM posts WHERE id > 1) AS p ON p.user_id = u.user_id`);
         });
 
         it('can have multiple joins', () => {
@@ -708,7 +730,7 @@ describe('Query', () => {
                 )
                 .generateSql();
 
-            expect(sql).toBe(`SELECT id, first_name FROM users AS u INNER JOIN (SELECT user_id FROM posts WHERE id > 1) AS p ON p.user_id = u.user_id INNER JOIN (SELECT account_id FROM bank_accounts WHERE status = 'active') AS ba ON ba.user_id = u.user_id`);
+            expect(sql).toBe(`SELECT id, first_name FROM users u INNER JOIN (SELECT user_id FROM posts WHERE id > 1) AS p ON p.user_id = u.user_id INNER JOIN (SELECT account_id FROM bank_accounts WHERE status = 'active') AS ba ON ba.user_id = u.user_id`);
         });
     })
 });

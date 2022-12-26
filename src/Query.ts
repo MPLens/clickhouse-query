@@ -30,6 +30,7 @@ export class Query extends FilterableQuery {
     private withPart: [Selectable | Query | string | null, string | null] = [null, null];
     private selectPart: SelectParams = '*';
     private fromPart: [string | Query, string | null] | null = null;
+    private isFinal: boolean = false;
     private groupByPart: Array<string> | null = null;
     private orderByPart: Array<OrderBy> | null = null;
     private limitPart: number | string | null = null;
@@ -60,6 +61,16 @@ export class Query extends FilterableQuery {
 
     public from(table: string | Query, alias: string | null = null) {
         this.fromPart = [table, alias];
+        return this;
+    }
+
+    /**
+     * Generates SQL query with FINAL keyword.
+     * Useful for tables which use ReplacingMergeTree engine to get rid-off duplicate entries.
+     * @link https://clickhouse.com/docs/en/engines/table-engines/mergetree-family/replacingmergetree
+     */
+    public final() {
+        this.isFinal = true;
         return this;
     }
 
@@ -119,13 +130,18 @@ export class Query extends FilterableQuery {
         }
 
         if (this.fromPart) {
-            if (this.fromPart[0] instanceof Query) {
-                sql += ' FROM (' + this.fromPart[0].generateSql() + ')';
+            const [table, alias] = this.fromPart;
+            if (table instanceof Query) {
+                sql += ' FROM (' + table.generateSql() + ')';
+                if (alias) {
+                    sql += ` AS ${table}`;
+                }
             } else {
-                sql += ` FROM ${this.fromPart[0]}`;
-            }
-            if (this.fromPart[1]) {
-                sql += ` AS ${this.fromPart[1]}`;
+                sql += ` FROM ${table}`;
+                sql += alias ? ` ${alias}` : '';
+                if (this.isFinal) {
+                    sql += ' FINAL';
+                }
             }
         }
 
