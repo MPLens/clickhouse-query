@@ -346,6 +346,22 @@ await builder.query()
 // Executes: (SELECT ip FROM metrics) AS m
 ```
 
+### FINAL
+
+Generates SQL query with `FINAL` keyword.
+
+Useful for tables which use [ReplacingMergeTree](https://clickhouse.com/docs/en/engines/table-engines/mergetree-family/replacingmergetree) engine to get rid-off duplicate entries.
+
+```ts
+await builder.query()
+        .select(['id', 'email'])
+        .final()
+        .from('users')
+        .where('id', '=', 1)
+        .execute();
+// Executes: SELECT id, email FROM users FINAL WHERE id = 1
+```
+
 ### FROM
 
 Select with table alias:
@@ -355,7 +371,7 @@ await builder.query()
     .select('id')
     .from('users', 'u')
     .execute();
-// Executes: SELECT id FROM users AS u
+// Executes: SELECT id FROM users u
 ````
 
 ### WHERE
