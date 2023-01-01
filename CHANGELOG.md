@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.7.2 - 2023-01-01
+
+### Fixed
+- Fixed bug when alias wasn't included in `FROM statement with subquery in it 
+
 ## v1.7.1 - 2022-12-26
 
 - Added support for `FINAL` modifier in `SELECT` queries, mainly used for ReplacingMergeTree engine 

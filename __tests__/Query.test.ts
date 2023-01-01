@@ -589,7 +589,7 @@ describe('Query', () => {
             expect(sql).toBe('SELECT * FROM users');
         });
 
-        it('supports query', () => {
+        it('supports subquery', () => {
             const q = getQuery();
             const sql = q
                 .select(['id', 'email'])
@@ -600,6 +600,20 @@ describe('Query', () => {
                         .where('status', '>', 10)
                 ).generateSql();
             expect(sql).toBe('SELECT id, email FROM (SELECT id, email FROM users WHERE status > 10)');
+        });
+
+        it('supports subquery with alias', () => {
+            const q = getQuery();
+            const sql = q
+                .select(['id', 'email'])
+                .from(
+                    getQuery()
+                        .select(['id', 'email'])
+                        .from('users')
+                        .where('status', '>', 10),
+                    'u'
+                ).generateSql();
+            expect(sql).toBe('SELECT id, email FROM (SELECT id, email FROM users WHERE status > 10) AS u');
         });
     });
 

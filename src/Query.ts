@@ -134,7 +134,7 @@ export class Query extends FilterableQuery {
             if (table instanceof Query) {
                 sql += ' FROM (' + table.generateSql() + ')';
                 if (alias) {
-                    sql += ` AS ${table}`;
+                    sql += ` AS ${alias}`;
                 }
             } else {
                 sql += ` FROM ${table}`;
