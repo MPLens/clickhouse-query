@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.7.3 - 2023-01-26
+
+### Fixed
+- Fixed invalid alias usage for WITH in case of subquery
+
 ## v1.7.2 - 2023-01-01
 
 ### Fixed

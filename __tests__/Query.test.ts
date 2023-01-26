@@ -481,7 +481,7 @@ describe('Query', () => {
                 .orderBy([['table_disk_usage', 'DESC']])
                 .limit(10)
                 .generateSql();
-            expect(sql).toBe(`WITH (WITH 2022-12-11 AS some_date SELECT sum(bytes) FROM system.parts WHERE active = 1) AS alias SELECT (sum(bytes) / total_disk_usage) * 100 AS table_disk_usage, table FROM system.parts GROUP BY table ORDER BY table_disk_usage DESC LIMIT 10`);
+            expect(sql).toBe(`WITH alias AS (WITH 2022-12-11 AS some_date SELECT sum(bytes) FROM system.parts WHERE active = 1) SELECT (sum(bytes) / total_disk_usage) * 100 AS table_disk_usage, table FROM system.parts GROUP BY table ORDER BY table_disk_usage DESC LIMIT 10`);
         });
 
         it('Using WITH within WITH as list of params', () => {

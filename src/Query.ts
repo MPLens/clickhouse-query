@@ -197,18 +197,21 @@ export class Query extends FilterableQuery {
                     }
                 }
                 preparedWithPart = `WITH ${withChunks.join(', ')}`;
+                if (alias) {
+                    preparedWithPart += ` AS ${alias}`;
+                }
             } else if (typeof withPart === 'string') {
                 preparedWithPart = `WITH '${withPart}'`;
+                if (alias) {
+                    preparedWithPart += ` AS ${alias}`;
+                }
             } else if (withPart instanceof Query) {
                 const hasInnerWithStatement = withPart.withPart[0];
                 if (hasInnerWithStatement) {
-                    preparedWithPart = `WITH (${withPart.generateSql()})`;
+                    preparedWithPart = `WITH ${(alias ? `${alias} AS` : '')} (${withPart.generateSql()})`;
                 } else {
-                    preparedWithPart = `WITH ${withPart.generateSql()}`;
+                    preparedWithPart = `WITH ${(alias ? `${alias} AS` : '')} ${withPart.generateSql()}`;
                 }
-            }
-            if (alias) {
-                preparedWithPart = `${preparedWithPart} AS ${alias}`;
             }
             sql = `${preparedWithPart} ${sql}`;
         } else {
