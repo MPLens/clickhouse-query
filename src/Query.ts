@@ -210,7 +210,7 @@ export class Query extends FilterableQuery {
                 if (hasInnerWithStatement) {
                     preparedWithPart = `WITH ${(alias ? `${alias} AS` : '')} (${withPart.generateSql()})`;
                 } else {
-                    preparedWithPart = `WITH ${(alias ? `${alias} AS` : '')} ${withPart.generateSql()}`;
+                    preparedWithPart = `WITH ${(alias ? `${alias} AS` : '')} (${withPart.generateSql()})`;
                 }
             }
             sql = `${preparedWithPart} ${sql}`;
