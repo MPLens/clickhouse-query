@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## v1.7.4 - 2023-02-08
+## v1.7.5 - 2023-03-05
 
 ### Added 
 - Added `argMin` and `argMax` aggregate functions
