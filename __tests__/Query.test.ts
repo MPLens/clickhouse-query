@@ -244,6 +244,18 @@ describe('Query', () => {
             expect(sql).toEqual('SELECT subtractDays(now(), {param:UInt32}) FROM users');
         });
 
+        it('generates argMin() as param', () => {
+            const q = getQuery();
+            const sql = q.select([fx.argMin('user', 'salary')]).from('salary').generateSql();
+            expect(sql).toEqual('SELECT argMin(user, salary) FROM salary');
+        });
+
+        it('generates argMax() as param', () => {
+            const q = getQuery();
+            const sql = q.select([fx.argMax('user', 'salary')]).from('salary').generateSql();
+            expect(sql).toEqual('SELECT argMax(user, salary) FROM salary');
+        });
+
         it('generates indexOf() with string as haystack (expression)', () => {
             const q = getQuery();
             const sql = q.select([fx.indexOf(expr('first_name'), '{name:String}')]).from('users').generateSql();
@@ -435,7 +447,7 @@ describe('Query', () => {
         it('Evicting an expression result from the SELECT clause column list', () => {
             const q = getQuery();
             const sql = q
-                .with([fx.sum(expr('bytes'))], 's')
+                .with([fx.sum(expr('bytes')).as('s')])
                 .select([expr('formatReadableSize(s)'), expr('table')])
                 .from('system.parts')
                 .groupBy(['table'])
@@ -463,6 +475,20 @@ describe('Query', () => {
             expect(sql).toBe(`WITH (SELECT sum(bytes) FROM system.parts WHERE active = 1) AS total_disk_usage SELECT (sum(bytes) / total_disk_usage) * 100 AS table_disk_usage, table FROM system.parts GROUP BY table ORDER BY table_disk_usage DESC LIMIT 10`);
         });
 
+        it('Reusing expression in a subquery', () => {
+            const sql = getQuery()
+                .with([
+                    getQuery()
+                        .select([expr('i + 1'), expr('j + 1')])
+                        .from('test1')
+                        .as('test1', 'first')
+                ])
+                .select('*')
+                .from('test1')
+                .generateSql();
+            expect(sql).toBe(`WITH test1 AS (SELECT i + 1, j + 1 FROM test1) SELECT * FROM test1`);
+        });
+
         it('Using WITH within WITH as query', () => {
             const q = getQuery();
             const q2 = getQuery();
@@ -481,7 +507,7 @@ describe('Query', () => {
                 .orderBy([['table_disk_usage', 'DESC']])
                 .limit(10)
                 .generateSql();
-            expect(sql).toBe(`WITH alias AS (WITH 2022-12-11 AS some_date SELECT sum(bytes) FROM system.parts WHERE active = 1) SELECT (sum(bytes) / total_disk_usage) * 100 AS table_disk_usage, table FROM system.parts GROUP BY table ORDER BY table_disk_usage DESC LIMIT 10`);
+            expect(sql).toBe(`WITH (WITH 2022-12-11 AS some_date SELECT sum(bytes) FROM system.parts WHERE active = 1) AS alias SELECT (sum(bytes) / total_disk_usage) * 100 AS table_disk_usage, table FROM system.parts GROUP BY table ORDER BY table_disk_usage DESC LIMIT 10`);
         });
 
         it('Using WITH within WITH as list of params', () => {

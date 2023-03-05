@@ -110,4 +110,12 @@ export class Functions {
     public translateUTF8(column: string | Expression, from: string, to: string): Expression {
         return new Expression(`translateUTF8(${processValue(this.maybeConvertToColumn(column))}, '${from}', '${to}')`);
     }
+
+    public argMin(arg:string, column: string): Expression {
+        return new Expression(`argMin(${arg}, ${column})`);
+    }
+
+    public argMax(arg:string, column: string): Expression {
+        return new Expression(`argMax(${arg}, ${column})`);
+    }
 }

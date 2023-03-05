@@ -36,7 +36,7 @@ export class Query extends FilterableQuery {
     private limitPart: number | string | null = null;
     private offsetPart: number | string | null = null;
     private joinPart: Array<[JoinOperator, Query | string, string, string]> = [];
-    private aliasPart: string | null = null;
+    private aliasPart: [string, 'first' | 'last'] | null = null;
 
     constructor(ch: ClickHouse, logger: Logger | null) {
         super();
@@ -54,8 +54,11 @@ export class Query extends FilterableQuery {
         return this;
     }
 
-    public as(alias: string) {
-        this.aliasPart = alias;
+    public as(alias: string, position: 'first' | 'last' = 'last') {
+        if (position !== 'first' && position !== 'last') {
+            throw new Error('Position must be "first" or "last"');
+        }
+        this.aliasPart = [alias, position];
         return this;
     }
 
@@ -208,7 +211,7 @@ export class Query extends FilterableQuery {
             } else if (withPart instanceof Query) {
                 const hasInnerWithStatement = withPart.withPart[0];
                 if (hasInnerWithStatement) {
-                    preparedWithPart = `WITH ${(alias ? `${alias} AS` : '')} (${withPart.generateSql()})`;
+                    preparedWithPart = `WITH (${withPart.generateSql()}) ${(alias ? `AS ${alias}` : '')}`;
                 } else {
                     preparedWithPart = `WITH ${(alias ? `${alias} AS` : '')} (${withPart.generateSql()})`;
                 }
@@ -216,7 +219,12 @@ export class Query extends FilterableQuery {
             sql = `${preparedWithPart} ${sql}`;
         } else {
             if (this.aliasPart) {
-                sql = `(${sql}) AS ${this.aliasPart}`;
+                const [alias, position] = this.aliasPart;
+                if (position === 'first') {
+                    sql = `${alias} AS (${sql})`;
+                } else {
+                    sql = `(${sql}) AS ${alias}`;
+                }
             }
         }
 

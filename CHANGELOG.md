@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.7.4 - 2023-02-08
+
+### Added 
+- Added `argMin` and `argMax` aggregate functions
+- Fixed multiple nested `WITH` behavior
+- Method `.as(...)` now supports second argument `position` to specify position of alias 
+in `SELECT` statement (`last` as default)
+
 ## v1.7.3 - 2023-01-26
 
 ### Fixed
