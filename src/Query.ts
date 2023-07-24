@@ -1,6 +1,7 @@
 import {ClickHouse} from 'clickhouse';
 import {Logger} from 'winston';
-import {FilterableQuery} from './FilterableQuery';
+import {FilterableQuery, Operator, WherePart, WhereValueCondition} from './FilterableQuery';
+import {Expression} from './Expression';
 
 type Selectable = Array<string | String | Query> | string;
 type SelectParams = Selectable | '*';
@@ -31,6 +32,7 @@ export class Query extends FilterableQuery {
     private selectPart: SelectParams = '*';
     private fromPart: [string | Query, string | null] | null = null;
     private isFinal: boolean = false;
+    private havingPart: WherePart = [];
     private groupByPart: Array<string> | null = null;
     private orderByPart: Array<OrderBy> | null = null;
     private limitPart: number | string | null = null;
@@ -105,6 +107,21 @@ export class Query extends FilterableQuery {
         return this;
     }
 
+    public having(column: string | Expression, operator: Operator | null = null, value: WhereValueCondition = null) {
+        this.havingPart.push(['AND', column, operator, value]);
+        return this;
+    }
+
+    public andHaving(column: string | Expression, operator: Operator | null = null, value: WhereValueCondition = null) {
+        this.havingPart.push(['AND', column, operator, value]);
+        return this;
+    }
+
+    public orHaving(column: string | Expression, operator: Operator | null = null, value: WhereValueCondition = null) {
+        this.havingPart.push(['OR', column, operator, value]);
+        return this;
+    }
+
     public clone(): Query {
         const queryClone = new Query(this.connection, this.logger);
         Object.assign(queryClone, this);
@@ -166,6 +183,10 @@ export class Query extends FilterableQuery {
 
         if (this.groupByPart && this.groupByPart.length) {
             sql += ` GROUP BY ${this.groupByPart.join(', ')}`;
+        }
+
+        if (this.havingPart.length) {
+            sql += ` HAVING ${this.buildWhereConditionsFromObject(this.havingPart)}`;
         }
 
         if (this.orderByPart && this.orderByPart.length > 0) {

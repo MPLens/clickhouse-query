@@ -20,8 +20,10 @@ syntax.
 - [DELETE](#delete)
 - [UPDATE](#update)
 - [SELECT](#select)
+  * [FINAL](#final)
   * [FROM](#from)
   * [WHERE](#where)
+  * [HAVING](#having)
   * [JOIN](#join)
   * [LIMIT/OFFSET](#limitoffset)
   * [WITH](#with)
@@ -45,6 +47,7 @@ syntax.
 - ORDER BY
 - LIMIT
 - OFFSET
+- HAVING
 - Helper functions, e.g. `fx.avg()`, `fx.countIf()`, etc
 - Custom SQL expressions with `expr()`
 
@@ -457,6 +460,27 @@ await builder.query()
     .where('email', 'LIKE', '%@gmail.com')
     .execute();
 // Executes: SELECT email FROM users WHERE email LIKE '%@gmail.com'
+```
+
+### HAVING
+
+```ts
+await await builder
+    .select([
+        'repo_name',
+        fx.sum(expr("event_type = 'ForkEvent'")).as('forks'),
+        fx.sum(expr("event_type = 'WatchEvent'")).as('stars'),
+        fx.round(expr('stars / forks'), 2).as('ratio'),
+    ])
+    .from('github_events')
+    .where('event_type', 'IN', ['ForkEvent', 'WatchEvent'])
+    .groupBy(['repo_name'])
+    .orderBy([['ratio', 'DESC']])
+    .having('stars', '>', 100)
+    .andHaving('forks', '>', 100)
+    .limit(50)
+    .execute();
+// Executes: SELECT repo_name, sum(event_type = 'ForkEvent') AS forks, sum(event_type = 'WatchEvent') AS stars, round(stars / forks, 2) AS ratio FROM github_events WHERE event_type IN ('ForkEvent', 'WatchEvent') GROUP BY repo_name HAVING stars > 100 AND forks > 100 ORDER BY ratio DESC LIMIT 50
 ```
 
 ### JOIN

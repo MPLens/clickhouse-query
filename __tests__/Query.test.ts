@@ -643,6 +643,68 @@ describe('Query', () => {
         });
     });
 
+    describe('HAVING', () => {
+
+        it('adds HAVING to query with single condition', () => {
+            const query = getQuery();
+            const sql = query
+                .select([
+                    'repo_name',
+                    fx.sum(expr("event_type = 'ForkEvent'")).as('forks'),
+                    fx.sum(expr("event_type = 'WatchEvent'")).as('stars'),
+                    fx.round(expr('stars / forks'), 2).as('ratio'),
+                ])
+                .from('github_events')
+                .where('event_type', 'IN', ['ForkEvent', 'WatchEvent'])
+                .groupBy(['repo_name'])
+                .orderBy([['ratio', 'DESC']])
+                .having('stars', '>', 100)
+                .limit(50)
+                .generateSql();
+            expect(sql).toBe('SELECT repo_name, sum(event_type = \'ForkEvent\') AS forks, sum(event_type = \'WatchEvent\') AS stars, round(stars / forks, 2) AS ratio FROM github_events WHERE event_type IN (\'ForkEvent\', \'WatchEvent\') GROUP BY repo_name HAVING stars > 100 ORDER BY ratio DESC LIMIT 50');
+        });
+
+        it('adds HAVING to query with or condition', () => {
+            const query = getQuery();
+            const sql = query
+                .select([
+                    'repo_name',
+                    fx.sum(expr("event_type = 'ForkEvent'")).as('forks'),
+                    fx.sum(expr("event_type = 'WatchEvent'")).as('stars'),
+                    fx.round(expr('stars / forks'), 2).as('ratio'),
+                ])
+                .from('github_events')
+                .where('event_type', 'IN', ['ForkEvent', 'WatchEvent'])
+                .groupBy(['repo_name'])
+                .orderBy([['ratio', 'DESC']])
+                .having('stars', '>', 100)
+                .orHaving('forks', '>', 100)
+                .limit(50)
+                .generateSql();
+            expect(sql).toBe('SELECT repo_name, sum(event_type = \'ForkEvent\') AS forks, sum(event_type = \'WatchEvent\') AS stars, round(stars / forks, 2) AS ratio FROM github_events WHERE event_type IN (\'ForkEvent\', \'WatchEvent\') GROUP BY repo_name HAVING stars > 100 OR forks > 100 ORDER BY ratio DESC LIMIT 50');
+        });
+
+        it('adds HAVING to query with and condition', () => {
+            const query = getQuery();
+            const sql = query
+                .select([
+                    'repo_name',
+                    fx.sum(expr("event_type = 'ForkEvent'")).as('forks'),
+                    fx.sum(expr("event_type = 'WatchEvent'")).as('stars'),
+                    fx.round(expr('stars / forks'), 2).as('ratio'),
+                ])
+                .from('github_events')
+                .where('event_type', 'IN', ['ForkEvent', 'WatchEvent'])
+                .groupBy(['repo_name'])
+                .orderBy([['ratio', 'DESC']])
+                .having('stars', '>', 100)
+                .andHaving('forks', '>', 100)
+                .limit(50)
+                .generateSql();
+            expect(sql).toBe('SELECT repo_name, sum(event_type = \'ForkEvent\') AS forks, sum(event_type = \'WatchEvent\') AS stars, round(stars / forks, 2) AS ratio FROM github_events WHERE event_type IN (\'ForkEvent\', \'WatchEvent\') GROUP BY repo_name HAVING stars > 100 AND forks > 100 ORDER BY ratio DESC LIMIT 50');
+        });
+    })
+
     describe('FINAL', () => {
         it('adds FINAL to query', () => {
             const query = getQuery();

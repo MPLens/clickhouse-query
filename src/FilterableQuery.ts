@@ -1,7 +1,7 @@
 import {Expression} from './Expression';
 import {processValue} from './helpers';
 
-type Operator =
+export type Operator =
     '='
     | '<'
     | '>'
@@ -16,7 +16,7 @@ type Operator =
     | 'IS NULL'
     | 'IS NOT NULL';
 
-type WhereValueCondition =
+export type WhereValueCondition =
     | string
     | number // Used for specific value matching
     | [string, string] // Used for BETWEEN
@@ -26,11 +26,12 @@ type WhereValueCondition =
     | Expression // Used for custom expressions
     | null;
 type WhereGroupConditions = 'AND' | 'OR';
-export type WhereCondition = [WhereGroupConditions, string | Expression, Operator | null, WhereValueCondition];
+type WhereCondition = [WhereGroupConditions, string | Expression, Operator | null, WhereValueCondition];
 type WhereConditionGrouped = [WhereGroupConditions, Array<WhereCondition>];
+export type WherePart = Array<WhereCondition | WhereConditionGrouped>;
 
 export class FilterableQuery extends String {
-    protected wherePart: Array<WhereCondition | WhereConditionGrouped> = [];
+    protected wherePart: WherePart = [];
 
     public where(column: string | Expression, operator: Operator | null = null, value: WhereValueCondition = null) {
         this.wherePart.push(['AND', column, operator, value]);
@@ -71,8 +72,14 @@ export class FilterableQuery extends String {
 
     generateWhere(): string {
         let sql = 'WHERE ';
+        sql += this.buildWhereConditionsFromObject(this.wherePart);
+        return sql;
+    }
+
+    protected buildWhereConditionsFromObject(whereObject: WherePart) {
+        let sql = '';
         const whereChunks: Array<String> = [];
-        this.wherePart.forEach((condition, index) => {
+        whereObject.forEach((condition, index) => {
             const hasPrev = !!this.wherePart[index - 1];
             const hasNext = !!this.wherePart[index + 1];
             if (
