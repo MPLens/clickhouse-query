@@ -1,7 +1,7 @@
 import {describe, expect, it} from '@jest/globals';
 import {ClickHouse} from 'clickhouse';
 import winston from 'winston';
-import {CreateTableQuery} from '../src/CreateTableQuery';
+import {CreateTableQuery} from '../src/internal';
 
 // @ts-ignore
 jest.mock('winston');

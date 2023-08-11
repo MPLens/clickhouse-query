@@ -41,6 +41,10 @@ export class Functions {
         return new Expression(`empty(${processValue(column)})`);
     }
 
+    public notEmpty(column: string | Expression): Expression {
+        return new Expression(`notEmpty(${processValue(column)})`);
+    }
+
     /** Arrays end **/
 
     public min(column: string | Expression): Expression {

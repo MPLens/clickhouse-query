@@ -39,7 +39,7 @@ export class UpdateQuery extends FilterableQuery {
         if (this.valuesPart.length === 0) {
             throw new Error('No values specified to update');
         }
-        if (this.wherePart.length === 0) {
+        if (!this.hasWhereConditions()) {
             throw new Error('No where clause specified');
         }
 

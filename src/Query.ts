@@ -1,7 +1,6 @@
 import {ClickHouse} from 'clickhouse';
 import {Logger} from 'winston';
-import {FilterableQuery, Operator, WherePart, WhereValueCondition} from './FilterableQuery';
-import {Expression} from './Expression';
+import {FilterableQuery, Operator, WherePart, WhereValueCondition, Expression} from './internal';
 
 type Selectable = Array<string | String | Query> | string;
 type SelectParams = Selectable | '*';
@@ -177,7 +176,7 @@ export class Query extends FilterableQuery {
             });
         }
 
-        if (this.wherePart.length) {
+        if (this.hasWhereConditions()) {
             sql += ` ${this.generateWhere()}`;
         }
 

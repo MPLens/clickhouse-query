@@ -1,5 +1,6 @@
 import {Expression} from './Expression';
 import {processValue} from './helpers';
+import {Query} from './internal';
 
 export type Operator =
     '='
@@ -23,6 +24,7 @@ export type WhereValueCondition =
     | [number, number] // Used for BETWEEN
     | number[] // Used for IN/NOT IN
     | string[] // Used for IN/NOT IN
+    | Query // // Used for IN/NOT IN
     | Expression // Used for custom expressions
     | null;
 type WhereGroupConditions = 'AND' | 'OR';
@@ -31,7 +33,7 @@ type WhereConditionGrouped = [WhereGroupConditions, Array<WhereCondition>];
 export type WherePart = Array<WhereCondition | WhereConditionGrouped>;
 
 export class FilterableQuery extends String {
-    protected wherePart: WherePart = [];
+    private wherePart: WherePart = [];
 
     public where(column: string | Expression, operator: Operator | null = null, value: WhereValueCondition = null) {
         this.wherePart.push(['AND', column, operator, value]);
@@ -70,13 +72,17 @@ export class FilterableQuery extends String {
         return this;
     }
 
+    public hasWhereConditions(): boolean {
+        return this.wherePart.length > 0;
+    }
+
     generateWhere(): string {
         let sql = 'WHERE ';
         sql += this.buildWhereConditionsFromObject(this.wherePart);
         return sql;
     }
 
-    protected buildWhereConditionsFromObject(whereObject: WherePart) {
+    public buildWhereConditionsFromObject(whereObject: WherePart) {
         let sql = '';
         const whereChunks: Array<String> = [];
         whereObject.forEach((condition, index) => {
@@ -165,10 +171,13 @@ export class FilterableQuery extends String {
                 break;
             case 'IN':
             case 'NOT IN':
-                if (!Array.isArray(value)) {
-                    throw new Error('Value for ' + operator + ' operator must be an array');
+                if (Array.isArray(value)) {
+                    sql += ` (${value.map((v) => processValue(v)).join(', ')})`;
+                } else if (value instanceof Query) {
+                    sql += ` (${value.generateSql()})`;
+                } else {
+                    throw new Error('Value for ' + operator + ' operator must be an array or Query object');
                 }
-                sql += ` (${value.map((v) => processValue(v)).join(', ')})`;
                 break;
             case 'LIKE':
             case 'NOT LIKE':

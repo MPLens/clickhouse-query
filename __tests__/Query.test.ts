@@ -2,7 +2,7 @@ import {describe, expect, it} from '@jest/globals';
 import {ClickHouse} from 'clickhouse';
 import winston from 'winston';
 import {fx, expr} from '../src';
-import {Query} from '../src/Query';
+import {Query} from '../src/internal';
 
 // @ts-ignore
 jest.mock('winston');

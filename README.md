@@ -451,6 +451,16 @@ await builder.query()
 // Executes: SELECT email FROM users WHERE id IN (1, 2, 3)
 ```
 
+Sub-query example:
+```ts
+await builder.query()
+    .select(['email'])
+    .from('users')
+    .where('id', 'IN', builder.query().select(['id']).from('test2'))
+    .execute();
+// Executes: SELECT email FROM users WHERE id IN (SELECT id FROM test2)
+```
+
 `LIKE`/`NOT LIKE` condition:
 
 ```ts
@@ -605,6 +615,7 @@ List of available helpers:
 - `arrayJoin`
 - `indexOf`
 - `empty`
+- `notEmpty`
 - `min`
 - `max`
 - `avgIf`

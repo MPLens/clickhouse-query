@@ -1,6 +1,24 @@
 import {describe, expect, it} from '@jest/globals';
-import {FilterableQuery} from '../src/FilterableQuery';
 
+import {ClickHouse} from 'clickhouse';
+import winston from 'winston';
+import {FilterableQuery, Query} from '../src/internal';
+
+// @ts-ignore
+jest.mock('winston');
+
+// @ts-ignore
+jest.mock('clickhouse');
+
+function createLogger() {
+    return winston.createLogger({
+        level: 'info',
+    });
+}
+
+function getQuery(): Query {
+    return new Query(new ClickHouse({}), createLogger());
+}
 
 describe('FilterableQuery', () => {
     it('keeps numeric values as is in WHERE condition', () => {
@@ -116,6 +134,19 @@ describe('FilterableQuery', () => {
             .generateWhere();
 
         expect(sql).toBe(`WHERE id NOT IN (1, 2, 3)`);
+    });
+
+    it('build WHERE condition IN with subquery', () => {
+        const sql = (new FilterableQuery())
+            .where('id', 'IN', getQuery().select(['id']).from('test2'))
+            .generateWhere();
+        expect(sql).toBe('WHERE id IN (SELECT id FROM test2)');
+    });
+    it('builds WHERE condition with NOT IN subquery', () => {
+        const sql = (new FilterableQuery())
+            .where('id', 'NOT IN', getQuery().select(['id']).from('test2'))
+            .generateWhere();
+        expect(sql).toBe('WHERE id NOT IN (SELECT id FROM test2)');
     });
 
     it('builds WHERE condition with LIKE type post search', () => {

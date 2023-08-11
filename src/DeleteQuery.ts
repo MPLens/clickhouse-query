@@ -1,6 +1,6 @@
 import {ClickHouse} from 'clickhouse';
 import {Logger} from 'winston';
-import {FilterableQuery} from './FilterableQuery';
+import {FilterableQuery} from './internal';
 import {expr} from './index';
 
 export class DeleteQuery extends FilterableQuery {
