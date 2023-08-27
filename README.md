@@ -1,7 +1,6 @@
 # ClickHouse Query
 
-ClickHouse Query is intuitive query builder to overcome the complexity of [ClickHouse](https://clickhouse.com/) SQL
-syntax.
+ClickHouse Query is intuitive query builder to simplify usage of [ClickHouse](https://clickhouse.com/).
 
 [![npm version](https://img.shields.io/npm/v/clickhouse-query.svg?style=flat-square)](https://www.npmjs.org/package/clickhouse-query)
 [![install size](https://img.shields.io/badge/dynamic/json?url=https://packagephobia.com/v2/api.json?p=clickhouse-query&query=$.install.pretty&label=install%20size&style=flat-square)](https://packagephobia.now.sh/result?p=clickhouse-query)
@@ -17,6 +16,7 @@ syntax.
   * [Quick start](#quick-start)
 - [CREATE TABLE](#create-table)
 - [INSERT](#insert)
+- [ALTER TABLE](#alter-table)
 - [DELETE](#delete)
 - [UPDATE](#update)
 - [SELECT](#select)
@@ -28,6 +28,8 @@ syntax.
   * [LIMIT/OFFSET](#limitoffset)
   * [WITH](#with)
   * [Helper Functions](#helper-functions)
+    + [fx](#fx)
+    + [schema](#schema)
   * [More examples](#more-examples)
 - [Tests](#tests)
 
@@ -70,7 +72,7 @@ npm install clickhouse-query
 Once the package is installed, you can import the library as follows:
 
 ```ts
-import {fx, expr, Query, QueryBuilder} from 'clickhouse-query';
+import {QueryBuilder, fx, expr, schema} from 'clickhouse-query';
 ```
 
 ### Quick start
@@ -100,10 +102,13 @@ TypeScript example:
 
 ```ts
 // ...
+type User = {
+    email: string;
+};
 const users = await builder.query()
     .select('email')
     .from('users')
-    .execute<Array<{ email: string }>>();
+    .execute<User[]>();
 // Executes: SELECT email FROM users
 ```
 
@@ -112,21 +117,25 @@ const users = await builder.query()
 Creating tables as simple as this:
 
 ```ts
+import {schema} from 'clickhouse-query';
+
 await builder.createTable()
     .table('table_name')
-    .column('column1', createTable.string())
+    .column('column1', schema.string())
     .engine('Memory')
     .execute();
 // Executes: CREATE TABLE table_name(column1 String) ENGINE = Memory
 ```
 
-Also, you can provide multiple columns to create: 
+Also, you can provide multiple columns to create:
 
 ```ts
+import {schema} from 'clickhouse-query';
+
 await builder.createTable()
     .table('table_name')
-    .column('column1', createTable.string())
-    .column('column_date', createTable.dateTime())
+    .column('column1', schema.string())
+    .column('column_date', schema.dateTime())
     .engine('Memory')
     .execute();
 // Executes: CREATE TABLE table_name(column1 String, column_date DateTime) ENGINE = Memory
@@ -135,10 +144,12 @@ await builder.createTable()
 Create table with `ORDER BY`:
 
 ```ts
+import {schema} from 'clickhouse-query';
+
 await builder.createTable()
     .table('table_name')
-    .column('column1', createTable.string())
-    .column('column_date', createTable.dateTime())
+    .column('column1', schema.string())
+    .column('column_date', schema.dateTime())
     .engine('MergeTree()')
     .orderBy(['column1', 'column_date'])
     .execute();
@@ -148,10 +159,12 @@ await builder.createTable()
 Create table with `IF NOT EXISTS`:
 
 ```ts
+import {schema} from 'clickhouse-query';
+
 await builder.createTable()
     .table('table_name')
     .ifNotExists()
-    .column('column1', createTable.string())
+    .column('column1', schema.string())
     .engine('Memory')
     .execute();
 // Executes: CREATE TABLE IF NOT EXISTS table_name(column1 String) ENGINE = Memory
@@ -209,10 +222,86 @@ await builder.insert()
 // Executes: INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20'), (2, '127.0.0.2', '2022-12-21')
 ```
 
+## ALTER TABLE
+
+Builder has special method called `alterTable()` to handle ALTER TABLE queries. Below you may find a couple of examples.
+
+Add column:
+
+```ts
+import {schema} from 'clickhouse-query';
+import {AddColumn} from './AddColumn';
+
+await builder.alterTable()
+    .table('table_name')
+    .addColumn((new AddColumn()).name('column1').type(schema.string()))
+    .execute();
+// Executes: ALTER TABLE table_name ADD COLUMN column1 String
+```
+
+Drop column:
+
+```ts
+await builder.alterTable()
+    .table('table_name')
+    .dropColumn((new DropColumn()).name('column1'))
+    .execute();
+// Executes: ALTER TABLE table_name DROP COLUMN column1
+```
+
+Rename column:
+
+```ts
+import {RenameColumn} from './RenameColumn';
+
+await builder.alterTable()
+    .table('table_name')
+    .renameColumn((new RenameColumn()).from('column1').to('column2'))
+    .execute();
+// Executes: ALTER TABLE table_name RENAME COLUMN column1 TO column2
+```
+
+Modify column:
+
+```ts
+import {schema} from 'clickhouse-query';
+
+await builder.alterTable()
+    .table('table_name')
+    .modifyColumn((new ModifyColumn()).modify().name('column1').type(schema.string()))
+    .execute();
+// Executes: ALTER TABLE table_name MODIFY COLUMN column1 String
+```
+
+Modify column with `AFTER`:
+
+```ts
+import {schema} from 'clickhouse-query';
+
+await builder.alterTable()
+    .table('table_name')
+    .modifyColumn((new ModifyColumn()).modify().name('column1').type(schema.string()).after('column2'))
+    .after('column2')
+    .execute();
+// Executes: ALTER TABLE table_name MODIFY COLUMN column1 String AFTER column2
+```
+
+Modify column with `FIRST`:
+
+```ts
+import {schema} from 'clickhouse-query';
+
+await builder.alterTable()
+    .table('table_name')
+    .modifyColumn((new ModifyColumn()).modify().name('column1').type(schema.string()).first())
+    .first()
+    .execute();
+// Executes: ALTER TABLE table_name MODIFY COLUMN column1 String FIRST
+```
+
 ## DELETE
 
 Builder has special method called `delete()` to handle DELETE queries. Below you may find a couple of examples.
-
 
 ```ts
 await builder.delete()
@@ -222,7 +311,7 @@ await builder.delete()
 // Executes: ALTER TABLE metrics DELETE WHERE created_date > '2022-12-20'
 ```
 
-If you want to delete everything from table use it as following: 
+If you want to delete everything from table use it as following:
 
 ```ts
 await builder.delete()
@@ -232,7 +321,7 @@ await builder.delete()
 // Executes: ALTER TABLE metrics DELETE WHERE 1 = 1
 ```
 
-Alternatively, you write example above as following: 
+Alternatively, you write example above as following:
 
 ```ts
 import {expr} from 'clickhouse-query';
@@ -277,8 +366,8 @@ Alternatively, you can use `values()` to update multiple columns:
 await builder.update()
     .table('metrics')
     .values([
-      ['ip', '127.0.0.1'],
-      ['user_agent', 'Googlebot/2.1'],
+        ['ip', '127.0.0.1'],
+        ['user_agent', 'Googlebot/2.1'],
     ])
     .where('ip', '=', '127.0.0.0')
     .execute();
@@ -298,7 +387,8 @@ await builder.update()
 
 ## SELECT
 
-Builder has special method called `query()` which allows you to build SELECT queries. Below you may find a couple of examples.
+Builder has special method called `query()` which allows you to build SELECT queries. Below you may find a couple of
+examples.
 
 Select single column:
 
@@ -353,15 +443,17 @@ await builder.query()
 
 Generates SQL query with `FINAL` keyword.
 
-Useful for tables which use [ReplacingMergeTree](https://clickhouse.com/docs/en/engines/table-engines/mergetree-family/replacingmergetree) engine to get rid-off duplicate entries.
+Useful for tables which
+use [ReplacingMergeTree](https://clickhouse.com/docs/en/engines/table-engines/mergetree-family/replacingmergetree)
+engine to get rid-off duplicate entries.
 
 ```ts
 await builder.query()
-        .select(['id', 'email'])
-        .final()
-        .from('users')
-        .where('id', '=', 1)
-        .execute();
+    .select(['id', 'email'])
+    .final()
+    .from('users')
+    .where('id', '=', 1)
+    .execute();
 // Executes: SELECT id, email FROM users FINAL WHERE id = 1
 ```
 
@@ -452,6 +544,7 @@ await builder.query()
 ```
 
 Sub-query example:
+
 ```ts
 await builder.query()
     .select(['email'])
@@ -583,6 +676,8 @@ await builder.query()
 
 ### Helper Functions
 
+#### fx
+
 Use `fx` helper to access ClickHouse functions.
 
 All helpers are simply wrappers which add extra syntax sugaring to help your IDE hint function arguments.
@@ -629,6 +724,21 @@ List of available helpers:
 - `subtractDays`
 - `positionCaseInsensitive`
 - `translateUTF8`
+
+#### schema
+
+Use `schema` helper to access ClickHouse data types. This helper can be used when creating tables or altering changes.
+
+```ts
+import {schema} from 'clickhouse-query';
+
+await builder.createTable()
+    .table('table_name')
+    .column('column1', schema.string())
+    .engine('Memory')
+    .execute();
+// Executes: CREATE TABLE table_name(column1 String) ENGINE = Memory
+```
 
 ### More examples
 

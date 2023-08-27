@@ -1,5 +1,6 @@
 import {ClickHouse} from 'clickhouse';
 import {Logger} from 'winston';
+import {schema} from './index';
 
 export class CreateTableQuery {
     private readonly connection: ClickHouse;
@@ -123,168 +124,248 @@ export class CreateTableQuery {
         return await (this.connection.query(sql).toPromise() as Promise<Response>);
     }
 
-    // Helpers start
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public nullable(type: string) {
-        return `Nullable(${type})`;
+        return schema.nullable(type);
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public int8() {
-        return `Int8`;
+        return schema.int8();
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public int16() {
-        return `Int16`;
+        return schema.int16();
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public int32() {
-        return `Int32`;
+        return schema.int32();
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public int64() {
-        return `Int64`;
+        return schema.int64();
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public int128() {
-        return `Int128`;
+        return schema.int128();
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public int256() {
-        return `Int256`;
+        return schema.int256();
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public uInt8() {
-        return `UInt8`;
+        return schema.uInt8();
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public uInt16() {
-        return `UInt16`;
+        return schema.uInt16();
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public uInt32() {
-        return `UInt32`;
+        return schema.uInt32();
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public uInt64() {
-        return `UInt64`;
+        return schema.uInt64();
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public uInt128() {
-        return `UInt128`;
+        return schema.uInt128();
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public uInt256() {
-        return `UInt256`;
+        return schema.uInt256();
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public float32() {
-        return `Float32`;
+        return schema.float32();
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public float64() {
-        return `Float64`;
+        return schema.float64();
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public decimal(precision: number, scale: number) {
-        return `Decimal(${precision}, ${scale})`;
+        return schema.decimal(precision, scale);
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public decimal32(precision: number, scale: number) {
-        return `Decimal32(${precision}, ${scale})`;
+        return schema.decimal32(precision, scale);
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public decimal64(precision: number, scale: number) {
-        return `Decimal64(${precision}, ${scale})`;
+        return schema.decimal64(precision, scale);
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public decimal128(precision: number, scale: number) {
-        return `Decimal128(${precision}, ${scale})`;
+        return schema.decimal128(precision, scale);
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public decimal256(precision: number, scale: number) {
-        return `Decimal256(${precision}, ${scale})`;
+        return schema.decimal256(precision, scale);
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public boolean() {
-        return `Bool`;
+        return schema.boolean();
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public string() {
-        return `String`;
+        return schema.string();
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public fixedString(length: number) {
-        return `FixedString(${length})`;
+        return schema.fixedString(length);
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public uuid() {
-        return `UUID`;
+        return schema.uuid();
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public date() {
-        return `Date`;
+        return schema.date();
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public date32() {
-        return `Date32`;
+        return schema.date32();
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public dateTime(timezone: string | null = null) {
-        if (timezone) {
-            return `DateTime('${timezone}')`;
-        }
-        return `DateTime`;
+        return schema.dateTime(timezone);
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public dateTime64(precision: number, timezone: string | null = null) {
-        if (timezone) {
-            return `DateTime64(${precision}, '${timezone}')`;
-        }
-        return `DateTime64(${precision})`;
+        return schema.dateTime64(precision, timezone);
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public enum(values: Record<string, number> | string[]) {
-        return this.enumInternal('Enum', values);
+        return schema.enum(values);
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public enum8(values: Record<string, number> | string[]) {
-        return this.enumInternal('Enum8', values);
+        return schema.enum8(values);
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public enum16(values: Record<string, number> | string[]) {
-        return this.enumInternal('Enum16', values);
+        return schema.enum16(values);
     }
 
-    private enumInternal(enumType: string, values: Record<string, number> | string[]) {
-        if (Array.isArray(values)) {
-            return `${enumType}(${values.map((v) => `'${v}'`).join(', ')})`;
-        }
-
-        const enumParts = [];
-        for (const key in values) {
-            enumParts.push(`'${key}' = ${values[key]}`);
-        }
-        return `${enumType}(${enumParts.join(', ')})`;
-    }
-
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public lowCardinality(type: string) {
-        return `LowCardinality(${type})`;
+        return schema.lowCardinality(type);
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public array(type: string) {
-        return `Array(${type})`;
+        return schema.array(type);
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public json() {
-        return 'JSON';
+        return schema.json();
     }
 
+    /**
+     * @deprecated Use `import {schema} from 'clickhouse-query' instead. It would be removed in >= 2.0.0.
+     */
     public tuple(types: Array<[name: string, type: string]>) {
-        const tupleParts = [];
-        for (const [name, type] of types) {
-            tupleParts.push(`${name} ${type}`);
-        }
-        return `Tuple(${tupleParts.join(', ')})`;
+        return schema.tuple(types);
     }
-
-    // Helpers end
 }

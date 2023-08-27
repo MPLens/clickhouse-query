@@ -5,6 +5,7 @@ import {InsertQuery} from './InsertQuery';
 import {DeleteQuery} from './DeleteQuery';
 import {UpdateQuery} from './UpdateQuery';
 import {CreateTableQuery} from './CreateTableQuery';
+import {AlterTableQuery} from './AlterTable/AlterTableQuery';
 
 
 export class QueryBuilder {
@@ -30,6 +31,10 @@ export class QueryBuilder {
 
     public update(): UpdateQuery {
         return new UpdateQuery(this.connection, this.logger);
+    }
+
+    public alter(): AlterTableQuery {
+        return new AlterTableQuery(this.connection, this.logger);
     }
 
     public createTable(): CreateTableQuery {
