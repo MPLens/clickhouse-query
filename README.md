@@ -170,6 +170,88 @@ await builder.createTable()
 // Executes: CREATE TABLE IF NOT EXISTS table_name(column1 String) ENGINE = Memory
 ```
 
+## ALTER TABLE
+
+Builder has special method called `alterTable()` to handle ALTER TABLE queries. Below you may find a couple of examples.
+
+Add column:
+
+```ts
+import {schema} from 'clickhouse-query';
+import {AddColumn} from 'clickhouse-query/AlterTable/AddColumn';
+
+await builder.alterTable()
+    .table('table_name')
+    .addColumn((new AddColumn()).name('column1').type(schema.string()))
+    .execute();
+// Executes: ALTER TABLE table_name ADD COLUMN column1 String
+```
+
+Drop column:
+
+```ts
+import {DropColumn} from 'clickhouse-query/AlterTable/DropColumn';
+
+await builder.alterTable()
+    .table('table_name')
+    .dropColumn((new DropColumn()).name('column1'))
+    .execute();
+// Executes: ALTER TABLE table_name DROP COLUMN column1
+```
+
+Rename column:
+
+```ts
+import {RenameColumn} from 'clickhouse-query/AlterTable/RenameColumn';
+
+await builder.alterTable()
+    .table('table_name')
+    .renameColumn((new RenameColumn()).from('column1').to('column2'))
+    .execute();
+// Executes: ALTER TABLE table_name RENAME COLUMN column1 TO column2
+```
+
+Modify column:
+
+```ts
+import {schema} from 'clickhouse-query';
+import {ModifyColumn} from 'clickhouse-query/AlterTable/ModifyColumn';
+
+await builder.alterTable()
+    .table('table_name')
+    .modifyColumn((new ModifyColumn()).modify().name('column1').type(schema.string()))
+    .execute();
+// Executes: ALTER TABLE table_name MODIFY COLUMN column1 String
+```
+
+Modify column with `AFTER`:
+
+```ts
+import {schema} from 'clickhouse-query';
+import {ModifyColumn} from 'clickhouse-query/AlterTable/ModifyColumn';
+
+await builder.alterTable()
+    .table('table_name')
+    .modifyColumn((new ModifyColumn()).modify().name('column1').type(schema.string()).after('column2'))
+    .after('column2')
+    .execute();
+// Executes: ALTER TABLE table_name MODIFY COLUMN column1 String AFTER column2
+```
+
+Modify column with `FIRST`:
+
+```ts
+import {schema} from 'clickhouse-query';
+import {ModifyColumn} from 'clickhouse-query/AlterTable/ModifyColumn';
+
+await builder.alterTable()
+    .table('table_name')
+    .modifyColumn((new ModifyColumn()).modify().name('column1').type(schema.string()).first())
+    .first()
+    .execute();
+// Executes: ALTER TABLE table_name MODIFY COLUMN column1 String FIRST
+```
+
 ## INSERT
 
 Builder has special method called `insert()` to handle INSERT queries. Below you may find a couple of examples.
@@ -220,83 +302,6 @@ await builder.insert()
     ])
     .execute();
 // Executes: INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20'), (2, '127.0.0.2', '2022-12-21')
-```
-
-## ALTER TABLE
-
-Builder has special method called `alterTable()` to handle ALTER TABLE queries. Below you may find a couple of examples.
-
-Add column:
-
-```ts
-import {schema} from 'clickhouse-query';
-import {AddColumn} from './AddColumn';
-
-await builder.alterTable()
-    .table('table_name')
-    .addColumn((new AddColumn()).name('column1').type(schema.string()))
-    .execute();
-// Executes: ALTER TABLE table_name ADD COLUMN column1 String
-```
-
-Drop column:
-
-```ts
-await builder.alterTable()
-    .table('table_name')
-    .dropColumn((new DropColumn()).name('column1'))
-    .execute();
-// Executes: ALTER TABLE table_name DROP COLUMN column1
-```
-
-Rename column:
-
-```ts
-import {RenameColumn} from './RenameColumn';
-
-await builder.alterTable()
-    .table('table_name')
-    .renameColumn((new RenameColumn()).from('column1').to('column2'))
-    .execute();
-// Executes: ALTER TABLE table_name RENAME COLUMN column1 TO column2
-```
-
-Modify column:
-
-```ts
-import {schema} from 'clickhouse-query';
-
-await builder.alterTable()
-    .table('table_name')
-    .modifyColumn((new ModifyColumn()).modify().name('column1').type(schema.string()))
-    .execute();
-// Executes: ALTER TABLE table_name MODIFY COLUMN column1 String
-```
-
-Modify column with `AFTER`:
-
-```ts
-import {schema} from 'clickhouse-query';
-
-await builder.alterTable()
-    .table('table_name')
-    .modifyColumn((new ModifyColumn()).modify().name('column1').type(schema.string()).after('column2'))
-    .after('column2')
-    .execute();
-// Executes: ALTER TABLE table_name MODIFY COLUMN column1 String AFTER column2
-```
-
-Modify column with `FIRST`:
-
-```ts
-import {schema} from 'clickhouse-query';
-
-await builder.alterTable()
-    .table('table_name')
-    .modifyColumn((new ModifyColumn()).modify().name('column1').type(schema.string()).first())
-    .first()
-    .execute();
-// Executes: ALTER TABLE table_name MODIFY COLUMN column1 String FIRST
 ```
 
 ## DELETE
