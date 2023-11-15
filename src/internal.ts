@@ -8,3 +8,4 @@ export * from './InsertQuery';
 export * from './UpdateQuery';
 export * from './DeleteQuery';
 export * from './CreateTableQuery';
+export * from './SchemaType';

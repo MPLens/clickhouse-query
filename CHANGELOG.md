@@ -2,6 +2,54 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2.0.0 - 2023-11-15 [BREAKING CHANGES]
+
+We migrated from `clickhouse` to `@clickhouse/client` for stability and better maintainability. 
+
+This means, you need to replace old configurations:
+
+```ts
+import {ClickHouse} from 'clickhouse';
+import winston from 'winston';
+import {QueryBuilder} from 'clickhouse-query';
+
+const clickhouse = new ClickHouse({
+    url: 'http://localhost',
+    port: 8123,
+    basicAuth: {username: 'user', password: 'password'},
+    format: 'json',
+    raw: false,
+});
+const logger = winston.createLogger(); // not required, you can pass as null
+const builder = new QueryBuilder(clickhouse, logger);
+```
+
+With the following: 
+
+```ts
+import {createClient} from '@clickhouse/client'
+import winston from 'winston';
+import {QueryBuilder} from 'clickhouse-query';
+
+// Configuration documentation - https://clickhouse.com/docs/en/integrations/language-clients/javascript#configuration
+const clickhouse = createClient({
+    host: 'http://localhost:8123',
+    username: 'user',
+    password: 'password',
+    database: 'my_database',
+    application: 'my_app'
+});
+const logger = winston.createLogger(); // not required, you can pass null if no logging required
+const builder = new QueryBuilder(clickhouse, logger);
+```
+
+- `AlterTableQuery::execute()` now DOES NOT accept generic and simply returns `Promise<void>` 
+- `CreateTableQuery::execute()` now DOES NOT accept generic and simply returns `Promise<void>` 
+- `DeleteQuery::execute()` now DOES NOT accept generic and simply returns `Promise<void>` 
+- `InsertQuery::execute()` now DOES NOT accept generic and simply returns `Promise<void>` 
+
+
+
 ## v1.7.5 - 2023-03-05
 
 ### Added 

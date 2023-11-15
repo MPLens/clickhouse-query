@@ -1,22 +1,19 @@
-import {ClickHouse} from 'clickhouse';
+import {ClickHouseClient} from '@clickhouse/client';
 import {Logger} from 'winston';
 import {Query} from './Query';
-
-type FileFormats = 'none'
+import Stream from 'stream';
 
 type Values<T extends Object> = Array<T> | Query;
 
 export class InsertQuery {
-    private readonly connection: ClickHouse;
+    private readonly connection: ClickHouseClient<Stream.Readable>;
     private readonly logger: Logger | null;
 
     private intoPart: string | null = null;
     private columnsPart: string[] | null = null;
     private valuesPart: Values<Object> | null = null;
 
-    private valuesFromFile: [string, string] | null = null;
-
-    constructor(ch: ClickHouse, logger: Logger | null) {
+    constructor(ch: ClickHouseClient<Stream.Readable>, logger: Logger | null) {
         this.connection = ch;
         this.logger = logger;
     }
@@ -103,11 +100,13 @@ export class InsertQuery {
         }
     }
 
-    public async execute<Response>() {
+    public async execute() {
         const sql = this.generateSql();
         if (this.logger !== null) {
             this.logger.info('ClickHouse query SQL: ' + sql);
         }
-        return await (this.connection.query(sql).toPromise() as Promise<Response>);
+        await this.connection.command({
+            query: sql,
+        });
     }
 }

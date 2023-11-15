@@ -1,6 +1,7 @@
-import {ClickHouse} from 'clickhouse';
+import {ClickHouseClient} from '@clickhouse/client';
 import {Logger} from 'winston';
 import {FilterableQuery, Operator, WherePart, WhereValueCondition, Expression} from './internal';
+import Stream from 'stream';
 
 type Selectable = Array<string | String | Query> | string;
 type SelectParams = Selectable | '*';
@@ -25,7 +26,7 @@ type JoinOperator =
     | 'LEFT ASOF JOIN';
 
 export class Query extends FilterableQuery {
-    private readonly connection: ClickHouse;
+    private readonly connection: ClickHouseClient<Stream.Readable>;
     private readonly logger: Logger | null;
     private withPart: [Selectable | Query | string | null, string | null] = [null, null];
     private selectPart: SelectParams = '*';
@@ -39,7 +40,7 @@ export class Query extends FilterableQuery {
     private joinPart: Array<[JoinOperator, Query | string, string, string]> = [];
     private aliasPart: [string, 'first' | 'last'] | null = null;
 
-    constructor(ch: ClickHouse, logger: Logger | null) {
+    constructor(ch: ClickHouseClient<Stream.Readable>, logger: Logger | null) {
         super();
         this.connection = ch;
         this.logger = logger;
@@ -259,7 +260,12 @@ export class Query extends FilterableQuery {
             this.logger.info('ClickHouse query template: ' + sql);
             this.logger.info('ClickHouse query SQL: ' + this.replaceParamsWithValues(sql, params));
         }
-        return await (this.connection.query(sql, {params}).toPromise() as Promise<Response>);
+        const res = await this.connection.query({
+            query: sql,
+            query_params: params,
+            format: 'JSONEachRow'
+        });
+        return res.json<Response>();
     }
 
     private replaceParamsWithValues(sql: string, params: Record<string, string | number | undefined>) {

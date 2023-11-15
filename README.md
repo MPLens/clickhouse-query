@@ -14,11 +14,6 @@ ClickHouse Query is intuitive query builder to simplify usage of [ClickHouse](ht
 - [Usage](#usage)
   * [Installation](#installation)
   * [Quick start](#quick-start)
-- [CREATE TABLE](#create-table)
-- [ALTER TABLE](#alter-table)
-- [INSERT](#insert)
-- [DELETE](#delete)
-- [UPDATE](#update)
 - [SELECT](#select)
   * [FINAL](#final)
   * [FROM](#from)
@@ -27,9 +22,14 @@ ClickHouse Query is intuitive query builder to simplify usage of [ClickHouse](ht
   * [JOIN](#join)
   * [LIMIT/OFFSET](#limitoffset)
   * [WITH](#with)
-  * [Helper Functions](#helper-functions)
-    + [fx](#fx)
-    + [schema](#schema)
+- [INSERT](#insert)
+- [DELETE](#delete)
+- [UPDATE](#update)
+- [CREATE TABLE](#create-table)
+- [ALTER TABLE](#alter-table)
+- [Helper Functions](#helper-functions)
+  * [fx](#fx)
+  * [schema](#schema)
   * [More examples](#more-examples)
 - [Tests](#tests)
 
@@ -77,19 +77,22 @@ import {QueryBuilder, fx, expr, schema} from 'clickhouse-query';
 
 ### Quick start
 
+ClickHouse Query is using `@clickhouse/client` package to perform queries to ClickHouse.
+
 ```ts
-import {ClickHouse} from 'clickhouse';
+import {createClient} from '@clickhouse/client'
 import winston from 'winston';
 import {QueryBuilder} from 'clickhouse-query';
 
-const clickhouse = new ClickHouse({
-    url: 'http://localhost',
-    port: 8123,
-    basicAuth: {username: 'user', password: 'password'},
-    format: 'json',
-    raw: false,
+// Configuration documentation - https://clickhouse.com/docs/en/integrations/language-clients/javascript#configuration
+const clickhouse = createClient({
+    host: 'http://localhost:8123',
+    username: 'user',
+    password: 'password',
+    database: 'my_database',
+    application: 'my_app'
 });
-const logger = winston.createLogger(); // not required, you can pass as null
+const logger = winston.createLogger(); // not required, you can pass null if no logging required
 const builder = new QueryBuilder(clickhouse, logger);
 const users = await builder.query()
     .select('email')
@@ -110,284 +113,6 @@ const users = await builder.query()
     .from('users')
     .execute<User[]>();
 // Executes: SELECT email FROM users
-```
-
-## CREATE TABLE
-
-Creating tables as simple as this:
-
-```ts
-import {schema} from 'clickhouse-query';
-
-await builder.createTable()
-    .table('table_name')
-    .column('column1', schema.string())
-    .engine('Memory')
-    .execute();
-// Executes: CREATE TABLE table_name(column1 String) ENGINE = Memory
-```
-
-Also, you can provide multiple columns to create:
-
-```ts
-import {schema} from 'clickhouse-query';
-
-await builder.createTable()
-    .table('table_name')
-    .column('column1', schema.string())
-    .column('column_date', schema.dateTime())
-    .engine('Memory')
-    .execute();
-// Executes: CREATE TABLE table_name(column1 String, column_date DateTime) ENGINE = Memory
-```
-
-Create table with `ORDER BY`:
-
-```ts
-import {schema} from 'clickhouse-query';
-
-await builder.createTable()
-    .table('table_name')
-    .column('column1', schema.string())
-    .column('column_date', schema.dateTime())
-    .engine('MergeTree()')
-    .orderBy(['column1', 'column_date'])
-    .execute();
-// Executes: CREATE TABLE table_name(column1 String, column_date DateTime) ENGINE = MergeTree() ORDER BY (column1, column_date)
-```
-
-Create table with `IF NOT EXISTS`:
-
-```ts
-import {schema} from 'clickhouse-query';
-
-await builder.createTable()
-    .table('table_name')
-    .ifNotExists()
-    .column('column1', schema.string())
-    .engine('Memory')
-    .execute();
-// Executes: CREATE TABLE IF NOT EXISTS table_name(column1 String) ENGINE = Memory
-```
-
-## ALTER TABLE
-
-Builder has special method called `alterTable()` to handle ALTER TABLE queries. Below you may find a couple of examples.
-
-Add column:
-
-```ts
-import {schema} from 'clickhouse-query';
-import {AddColumn} from 'clickhouse-query/AlterTable/AddColumn';
-
-await builder.alterTable()
-    .table('table_name')
-    .addColumn((new AddColumn()).name('column1').type(schema.string()))
-    .execute();
-// Executes: ALTER TABLE table_name ADD COLUMN column1 String
-```
-
-Drop column:
-
-```ts
-import {DropColumn} from 'clickhouse-query/AlterTable/DropColumn';
-
-await builder.alterTable()
-    .table('table_name')
-    .dropColumn((new DropColumn()).name('column1'))
-    .execute();
-// Executes: ALTER TABLE table_name DROP COLUMN column1
-```
-
-Rename column:
-
-```ts
-import {RenameColumn} from 'clickhouse-query/AlterTable/RenameColumn';
-
-await builder.alterTable()
-    .table('table_name')
-    .renameColumn((new RenameColumn()).from('column1').to('column2'))
-    .execute();
-// Executes: ALTER TABLE table_name RENAME COLUMN column1 TO column2
-```
-
-Modify column:
-
-```ts
-import {schema} from 'clickhouse-query';
-import {ModifyColumn} from 'clickhouse-query/AlterTable/ModifyColumn';
-
-await builder.alterTable()
-    .table('table_name')
-    .modifyColumn((new ModifyColumn()).modify().name('column1').type(schema.string()))
-    .execute();
-// Executes: ALTER TABLE table_name MODIFY COLUMN column1 String
-```
-
-Modify column with `AFTER`:
-
-```ts
-import {schema} from 'clickhouse-query';
-import {ModifyColumn} from 'clickhouse-query/AlterTable/ModifyColumn';
-
-await builder.alterTable()
-    .table('table_name')
-    .modifyColumn((new ModifyColumn()).modify().name('column1').type(schema.string()).after('column2'))
-    .after('column2')
-    .execute();
-// Executes: ALTER TABLE table_name MODIFY COLUMN column1 String AFTER column2
-```
-
-Modify column with `FIRST`:
-
-```ts
-import {schema} from 'clickhouse-query';
-import {ModifyColumn} from 'clickhouse-query/AlterTable/ModifyColumn';
-
-await builder.alterTable()
-    .table('table_name')
-    .modifyColumn((new ModifyColumn()).modify().name('column1').type(schema.string()).first())
-    .first()
-    .execute();
-// Executes: ALTER TABLE table_name MODIFY COLUMN column1 String FIRST
-```
-
-## INSERT
-
-Builder has special method called `insert()` to handle INSERT queries. Below you may find a couple of examples.
-
-Insert single row:
-
-```ts
-await builder.insert()
-    .into('metrics')
-    .columns(['id', 'ip', 'created_date'])
-    .values({id: 1, ip: '127.0.0.1', created_date: '2022-12-20'})
-    .execute();
-// Executes: INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20')
-```
-
-Definition of `columns()` is optional, you can use `values()` without it. `values()` will use the first row to determine
-the columns.
-
-```ts
-await builder.insert()
-    .into('metrics')
-    .values({id: 1, ip: '127.0.0.1', created_date: '2022-12-20'})
-    .execute();
-// Executes: INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20')
-```
-
-You can chain multiple rows using `values()`:
-
-```ts
-await builder.insert()
-    .into('metrics')
-    .columns(['id', 'ip', 'created_date'])
-    .values({id: 1, ip: '127.0.0.1', created_date: '2022-12-20'})
-    .values({id: 2, ip: '127.0.0.2', created_date: '2022-12-21'})
-    .execute();
-// Executes: INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20'), (2, '127.0.0.2', '2022-12-21')
-```
-
-You can write bulk rows (same as above):
-
-```ts
-await builder.insert()
-    .into('metrics')
-    .columns(['id', 'ip', 'created_date'])
-    .values([
-        {id: 1, ip: '127.0.0.1', created_date: '2022-12-20'},
-        {id: 2, ip: '127.0.0.2', created_date: '2022-12-21'}
-    ])
-    .execute();
-// Executes: INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20'), (2, '127.0.0.2', '2022-12-21')
-```
-
-## DELETE
-
-Builder has special method called `delete()` to handle DELETE queries. Below you may find a couple of examples.
-
-```ts
-await builder.delete()
-    .table('metrics')
-    .where('created_date', '>', '2022-12-20')
-    .execute();
-// Executes: ALTER TABLE metrics DELETE WHERE created_date > '2022-12-20'
-```
-
-If you want to delete everything from table use it as following:
-
-```ts
-await builder.delete()
-    .table('metrics')
-    .all()
-    .execute();
-// Executes: ALTER TABLE metrics DELETE WHERE 1 = 1
-```
-
-Alternatively, you write example above as following:
-
-```ts
-import {expr} from 'clickhouse-query';
-
-await builder.delete()
-    .table('metrics')
-    .where(expr('1'), '=', 1)
-    .execute();
-// Executes: ALTER TABLE metrics DELETE WHERE 1 = 1
-```
-
-## UPDATE
-
-Builder has special method called `update()` to handle UPDATE queries. Below you may find a couple of examples.
-
-Update single column:
-
-```ts
-await builder.update()
-    .table('metrics')
-    .value('ip', '127.0.0.1')
-    .where('ip', '=', '127.0.0.0')
-    .execute();
-// Executes: ALTER TABLE metrics UPDATE ip = '127.0.0.1' WHERE ip = '127.0.0.0'
-```
-
-Update multiple columns chained:
-
-```ts
-await builder.update()
-    .table('metrics')
-    .value('ip', '127.0.0.1')
-    .value('user_agent', 'Googlebot/2.1')
-    .where('ip', '=', '127.0.0.0')
-    .execute();
-// Executes: ALTER TABLE metrics UPDATE ip = '127.0.0.1', user_agent = 'Googlebot/2.1' WHERE ip = '127.0.0.0'
-```
-
-Alternatively, you can use `values()` to update multiple columns:
-
-```ts
-await builder.update()
-    .table('metrics')
-    .values([
-        ['ip', '127.0.0.1'],
-        ['user_agent', 'Googlebot/2.1'],
-    ])
-    .where('ip', '=', '127.0.0.0')
-    .execute();
-// Executes: ALTER TABLE metrics UPDATE ip = '127.0.0.1', user_agent = 'Googlebot/2.1' WHERE ip = '127.0.0.0'
-```
-
-You can pass array as value, it would be properly converted:
-
-```ts
-await builder.update()
-    .table('metrics')
-    .value('ips', ['127.0.0.1', '127.0.0.2'])
-    .where('id', '=', 1)
-    .execute();
-// Executes: ALTER TABLE metrics UPDATE ips = ['127.0.0.1', '127.0.0.2'] WHERE id = 1
 ```
 
 ## SELECT
@@ -679,9 +404,287 @@ await builder.query()
 // Executes: WITH (SELECT sum(bytes) FROM system.parts WHERE active = 1) AS total_disk_usage SELECT (sum(bytes) / total_disk_usage) * 100 AS table_disk_usage, table FROM system.parts GROUP BY table ORDER BY table_disk_usage DESC LIMIT 10
 ```
 
-### Helper Functions
+## INSERT
 
-#### fx
+Builder has special method called `insert()` to handle INSERT queries. Below you may find a couple of examples.
+
+Insert single row:
+
+```ts
+await builder.insert()
+    .into('metrics')
+    .columns(['id', 'ip', 'created_date'])
+    .values({id: 1, ip: '127.0.0.1', created_date: '2022-12-20'})
+    .execute();
+// Executes: INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20')
+```
+
+Definition of `columns()` is optional, you can use `values()` without it. `values()` will use the first row to determine
+the columns.
+
+```ts
+await builder.insert()
+    .into('metrics')
+    .values({id: 1, ip: '127.0.0.1', created_date: '2022-12-20'})
+    .execute();
+// Executes: INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20')
+```
+
+You can chain multiple rows using `values()`:
+
+```ts
+await builder.insert()
+    .into('metrics')
+    .columns(['id', 'ip', 'created_date'])
+    .values({id: 1, ip: '127.0.0.1', created_date: '2022-12-20'})
+    .values({id: 2, ip: '127.0.0.2', created_date: '2022-12-21'})
+    .execute();
+// Executes: INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20'), (2, '127.0.0.2', '2022-12-21')
+```
+
+You can write bulk rows (same as above):
+
+```ts
+await builder.insert()
+    .into('metrics')
+    .columns(['id', 'ip', 'created_date'])
+    .values([
+        {id: 1, ip: '127.0.0.1', created_date: '2022-12-20'},
+        {id: 2, ip: '127.0.0.2', created_date: '2022-12-21'}
+    ])
+    .execute();
+// Executes: INSERT INTO metrics (id, ip, created_date) VALUES (1, '127.0.0.1', '2022-12-20'), (2, '127.0.0.2', '2022-12-21')
+```
+
+## DELETE
+
+Builder has special method called `delete()` to handle DELETE queries. Below you may find a couple of examples.
+
+```ts
+await builder.delete()
+    .table('metrics')
+    .where('created_date', '>', '2022-12-20')
+    .execute();
+// Executes: ALTER TABLE metrics DELETE WHERE created_date > '2022-12-20'
+```
+
+If you want to delete everything from table use it as following:
+
+```ts
+await builder.delete()
+    .table('metrics')
+    .all()
+    .execute();
+// Executes: ALTER TABLE metrics DELETE WHERE 1 = 1
+```
+
+Alternatively, you write example above as following:
+
+```ts
+import {expr} from 'clickhouse-query';
+
+await builder.delete()
+    .table('metrics')
+    .where(expr('1'), '=', 1)
+    .execute();
+// Executes: ALTER TABLE metrics DELETE WHERE 1 = 1
+```
+
+## UPDATE
+
+Builder has special method called `update()` to handle UPDATE queries. Below you may find a couple of examples.
+
+Update single column:
+
+```ts
+await builder.update()
+    .table('metrics')
+    .value('ip', '127.0.0.1')
+    .where('ip', '=', '127.0.0.0')
+    .execute();
+// Executes: ALTER TABLE metrics UPDATE ip = '127.0.0.1' WHERE ip = '127.0.0.0'
+```
+
+Update multiple columns chained:
+
+```ts
+await builder.update()
+    .table('metrics')
+    .value('ip', '127.0.0.1')
+    .value('user_agent', 'Googlebot/2.1')
+    .where('ip', '=', '127.0.0.0')
+    .execute();
+// Executes: ALTER TABLE metrics UPDATE ip = '127.0.0.1', user_agent = 'Googlebot/2.1' WHERE ip = '127.0.0.0'
+```
+
+Alternatively, you can use `values()` to update multiple columns:
+
+```ts
+await builder.update()
+    .table('metrics')
+    .values([
+        ['ip', '127.0.0.1'],
+        ['user_agent', 'Googlebot/2.1'],
+    ])
+    .where('ip', '=', '127.0.0.0')
+    .execute();
+// Executes: ALTER TABLE metrics UPDATE ip = '127.0.0.1', user_agent = 'Googlebot/2.1' WHERE ip = '127.0.0.0'
+```
+
+You can pass array as value, it would be properly converted:
+
+```ts
+await builder.update()
+    .table('metrics')
+    .value('ips', ['127.0.0.1', '127.0.0.2'])
+    .where('id', '=', 1)
+    .execute();
+// Executes: ALTER TABLE metrics UPDATE ips = ['127.0.0.1', '127.0.0.2'] WHERE id = 1
+```
+
+## CREATE TABLE
+
+Creating tables as simple as this:
+
+```ts
+import {schema} from 'clickhouse-query';
+
+await builder.createTable()
+    .table('table_name')
+    .column('column1', schema.string())
+    .engine('Memory')
+    .execute();
+// Executes: CREATE TABLE table_name(column1 String) ENGINE = Memory
+```
+
+Also, you can provide multiple columns to create:
+
+```ts
+import {schema} from 'clickhouse-query';
+
+await builder.createTable()
+    .table('table_name')
+    .column('column1', schema.string())
+    .column('column_date', schema.dateTime())
+    .engine('Memory')
+    .execute();
+// Executes: CREATE TABLE table_name(column1 String, column_date DateTime) ENGINE = Memory
+```
+
+Create table with `ORDER BY`:
+
+```ts
+import {schema} from 'clickhouse-query';
+
+await builder.createTable()
+    .table('table_name')
+    .column('column1', schema.string())
+    .column('column_date', schema.dateTime())
+    .engine('MergeTree()')
+    .orderBy(['column1', 'column_date'])
+    .execute();
+// Executes: CREATE TABLE table_name(column1 String, column_date DateTime) ENGINE = MergeTree() ORDER BY (column1, column_date)
+```
+
+Create table with `IF NOT EXISTS`:
+
+```ts
+import {schema} from 'clickhouse-query';
+
+await builder.createTable()
+    .table('table_name')
+    .ifNotExists()
+    .column('column1', schema.string())
+    .engine('Memory')
+    .execute();
+// Executes: CREATE TABLE IF NOT EXISTS table_name(column1 String) ENGINE = Memory
+```
+
+## ALTER TABLE
+
+Builder has special method called `alterTable()` to handle ALTER TABLE queries. Below you may find a couple of examples.
+
+Add column:
+
+```ts
+import {schema} from 'clickhouse-query';
+import {AddColumn} from 'clickhouse-query/AlterTable/AddColumn';
+
+await builder.alterTable()
+    .table('table_name')
+    .addColumn((new AddColumn()).name('column1').type(schema.string()))
+    .execute();
+// Executes: ALTER TABLE table_name ADD COLUMN column1 String
+```
+
+Drop column:
+
+```ts
+import {DropColumn} from 'clickhouse-query/AlterTable/DropColumn';
+
+await builder.alterTable()
+    .table('table_name')
+    .dropColumn((new DropColumn()).name('column1'))
+    .execute();
+// Executes: ALTER TABLE table_name DROP COLUMN column1
+```
+
+Rename column:
+
+```ts
+import {RenameColumn} from 'clickhouse-query/AlterTable/RenameColumn';
+
+await builder.alterTable()
+    .table('table_name')
+    .renameColumn((new RenameColumn()).from('column1').to('column2'))
+    .execute();
+// Executes: ALTER TABLE table_name RENAME COLUMN column1 TO column2
+```
+
+Modify column:
+
+```ts
+import {schema} from 'clickhouse-query';
+import {ModifyColumn} from 'clickhouse-query/AlterTable/ModifyColumn';
+
+await builder.alterTable()
+    .table('table_name')
+    .modifyColumn((new ModifyColumn()).modify().name('column1').type(schema.string()))
+    .execute();
+// Executes: ALTER TABLE table_name MODIFY COLUMN column1 String
+```
+
+Modify column with `AFTER`:
+
+```ts
+import {schema} from 'clickhouse-query';
+import {ModifyColumn} from 'clickhouse-query/AlterTable/ModifyColumn';
+
+await builder.alterTable()
+    .table('table_name')
+    .modifyColumn((new ModifyColumn()).modify().name('column1').type(schema.string()).after('column2'))
+    .after('column2')
+    .execute();
+// Executes: ALTER TABLE table_name MODIFY COLUMN column1 String AFTER column2
+```
+
+Modify column with `FIRST`:
+
+```ts
+import {schema} from 'clickhouse-query';
+import {ModifyColumn} from 'clickhouse-query/AlterTable/ModifyColumn';
+
+await builder.alterTable()
+    .table('table_name')
+    .modifyColumn((new ModifyColumn()).modify().name('column1').type(schema.string()).first())
+    .first()
+    .execute();
+// Executes: ALTER TABLE table_name MODIFY COLUMN column1 String FIRST
+```
+
+## Helper Functions
+
+### fx
 
 Use `fx` helper to access ClickHouse functions.
 
@@ -730,7 +733,7 @@ List of available helpers:
 - `positionCaseInsensitive`
 - `translateUTF8`
 
-#### schema
+### schema
 
 Use `schema` helper to access ClickHouse data types. This helper can be used when creating tables or altering changes.
 
@@ -745,7 +748,7 @@ await builder.createTable()
 // Executes: CREATE TABLE table_name(column1 String) ENGINE = Memory
 ```
 
-### More examples
+## More Code Examples
 
 For further query examples you can check `__tests__` folder.
 
@@ -758,6 +761,14 @@ Run tests:
 ```bash
 yarn tests
 ```
+
+## Scripts
+
+- `yarn build` - build project
+- `yarn test` - run tests
+- `yarn toc` - auto-generate table of contents
+
+
 
 
 

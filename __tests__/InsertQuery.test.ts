@@ -1,5 +1,5 @@
 import {describe, expect, it} from '@jest/globals';
-import {ClickHouse} from 'clickhouse';
+import {createClient} from '@clickhouse/client'
 import winston from 'winston';
 import {InsertQuery, Query} from '../src/internal';
 
@@ -7,7 +7,7 @@ import {InsertQuery, Query} from '../src/internal';
 jest.mock('winston');
 
 // @ts-ignore
-jest.mock('clickhouse');
+jest.mock('@clickhouse/client');
 
 function createLogger() {
     return winston.createLogger({
@@ -16,11 +16,11 @@ function createLogger() {
 }
 
 function getInsertQuery(): InsertQuery {
-    return new InsertQuery(new ClickHouse({}), createLogger());
+    return new InsertQuery(createClient(), createLogger());
 }
 
 function getQuery(): Query {
-    return new Query(new ClickHouse({}), createLogger());
+    return new Query(createClient(), createLogger());
 }
 
 describe('InsertQuery', () => {

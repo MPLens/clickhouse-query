@@ -1,13 +1,14 @@
 import {describe, expect, it} from '@jest/globals';
-import {ClickHouse} from 'clickhouse';
+import {createClient} from '@clickhouse/client'
 import winston from 'winston';
 import {CreateTableQuery} from '../src/internal';
+import {schema} from '../src';
 
 // @ts-ignore
 jest.mock('winston');
 
 // @ts-ignore
-jest.mock('clickhouse');
+jest.mock('@clickhouse/client');
 
 function createLogger() {
     return winston.createLogger({
@@ -16,7 +17,7 @@ function createLogger() {
 }
 
 function getCreateTableQuery(): CreateTableQuery {
-    return new CreateTableQuery(new ClickHouse({}), createLogger());
+    return new CreateTableQuery(createClient(), createLogger());
 }
 
 describe('CreateTableQuery', () => {
@@ -24,7 +25,7 @@ describe('CreateTableQuery', () => {
         const createTable = getCreateTableQuery();
         const sql = createTable
             .table('table_name')
-            .column('column1', createTable.string())
+            .column('column1', schema.string())
             .engine('Memory')
             .generateSql();
 
@@ -35,8 +36,8 @@ describe('CreateTableQuery', () => {
         const createTable = getCreateTableQuery();
         const sql = createTable
             .table('table_name')
-            .column('column1', createTable.string())
-            .column('column_date', createTable.dateTime())
+            .column('column1', schema.string())
+            .column('column_date', schema.dateTime())
             .engine('Memory')
             .generateSql();
 
@@ -47,8 +48,8 @@ describe('CreateTableQuery', () => {
         const createTable = getCreateTableQuery();
         const sql = createTable
             .table('table_name')
-            .column('column1', createTable.string())
-            .column('column_date', createTable.dateTime())
+            .column('column1', schema.string())
+            .column('column_date', schema.dateTime())
             .engine('MergeTree()')
             .orderBy(['column1', 'column_date'])
             .generateSql();
@@ -61,7 +62,7 @@ describe('CreateTableQuery', () => {
         const sql = createTable
             .table('table_name')
             .ifNotExists()
-            .column('column1', createTable.string())
+            .column('column1', schema.string())
             .engine('Memory')
             .generateSql();
 
@@ -73,7 +74,7 @@ describe('CreateTableQuery', () => {
         const sql = createTable
             .table('table_name')
             .onCluster('my_cluster')
-            .column('column1', createTable.string())
+            .column('column1', schema.string())
             .engine('Memory')
             .generateSql();
 
@@ -87,7 +88,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.nullable(createTable.string()))
+                .column('column1', schema.nullable(schema.string()))
                 .engine('Memory')
                 .generateSql();
 
@@ -99,7 +100,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.int8())
+                .column('column1', schema.int8())
                 .engine('Memory')
                 .generateSql();
 
@@ -111,7 +112,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.int16())
+                .column('column1', schema.int16())
                 .engine('Memory')
                 .generateSql();
 
@@ -123,7 +124,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.int32())
+                .column('column1', schema.int32())
                 .engine('Memory')
                 .generateSql();
 
@@ -135,7 +136,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.int64())
+                .column('column1', schema.int64())
                 .engine('Memory')
                 .generateSql();
 
@@ -147,7 +148,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.int128())
+                .column('column1', schema.int128())
                 .engine('Memory')
                 .generateSql();
 
@@ -159,7 +160,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.int256())
+                .column('column1', schema.int256())
                 .engine('Memory')
                 .generateSql();
 
@@ -175,7 +176,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.uInt8())
+                .column('column1', schema.uInt8())
                 .engine('Memory')
                 .generateSql();
 
@@ -187,7 +188,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.uInt16())
+                .column('column1', schema.uInt16())
                 .engine('Memory')
                 .generateSql();
 
@@ -199,7 +200,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.uInt32())
+                .column('column1', schema.uInt32())
                 .engine('Memory')
                 .generateSql();
 
@@ -211,7 +212,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.uInt64())
+                .column('column1', schema.uInt64())
                 .engine('Memory')
                 .generateSql();
 
@@ -223,7 +224,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.uInt128())
+                .column('column1', schema.uInt128())
                 .engine('Memory')
                 .generateSql();
 
@@ -235,7 +236,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.uInt256())
+                .column('column1', schema.uInt256())
                 .engine('Memory')
                 .generateSql();
 
@@ -247,7 +248,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.float32())
+                .column('column1', schema.float32())
                 .engine('Memory')
                 .generateSql();
 
@@ -259,7 +260,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.float64())
+                .column('column1', schema.float64())
                 .engine('Memory')
                 .generateSql();
 
@@ -271,7 +272,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.decimal(10, 2))
+                .column('column1', schema.decimal(10, 2))
                 .engine('Memory')
                 .generateSql();
 
@@ -283,7 +284,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.decimal32(10, 2))
+                .column('column1', schema.decimal32(10, 2))
                 .engine('Memory')
                 .generateSql();
 
@@ -295,7 +296,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.decimal64(10, 2))
+                .column('column1', schema.decimal64(10, 2))
                 .engine('Memory')
                 .generateSql();
 
@@ -307,7 +308,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.decimal128(10, 2))
+                .column('column1', schema.decimal128(10, 2))
                 .engine('Memory')
                 .generateSql();
 
@@ -319,7 +320,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.decimal256(10, 2))
+                .column('column1', schema.decimal256(10, 2))
                 .engine('Memory')
                 .generateSql();
 
@@ -331,7 +332,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.boolean())
+                .column('column1', schema.boolean())
                 .engine('Memory')
                 .generateSql();
 
@@ -343,7 +344,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.string())
+                .column('column1', schema.string())
                 .engine('Memory')
                 .generateSql();
 
@@ -355,7 +356,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.fixedString(5))
+                .column('column1', schema.fixedString(5))
                 .engine('Memory')
                 .generateSql();
 
@@ -367,7 +368,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.uuid())
+                .column('column1', schema.uuid())
                 .engine('Memory')
                 .generateSql();
 
@@ -379,7 +380,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.date())
+                .column('column1', schema.date())
                 .engine('Memory')
                 .generateSql();
 
@@ -391,7 +392,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.date32())
+                .column('column1', schema.date32())
                 .engine('Memory')
                 .generateSql();
 
@@ -403,7 +404,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.dateTime())
+                .column('column1', schema.dateTime())
                 .engine('Memory')
                 .generateSql();
 
@@ -415,7 +416,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.dateTime())
+                .column('column1', schema.dateTime())
                 .engine('Memory')
                 .generateSql();
 
@@ -427,7 +428,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.dateTime('Asia/Istanbul'))
+                .column('column1', schema.dateTime('Asia/Istanbul'))
                 .engine('Memory')
                 .generateSql();
 
@@ -442,7 +443,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.dateTime64(3))
+                .column('column1', schema.dateTime64(3))
                 .engine('Memory')
                 .generateSql();
 
@@ -454,7 +455,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.dateTime64(3,'Asia/Istanbul'))
+                .column('column1', schema.dateTime64(3,'Asia/Istanbul'))
                 .engine('Memory')
                 .generateSql();
 
@@ -467,7 +468,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.enum({hello: 1, world: 2}))
+                .column('column1', schema.enum({hello: 1, world: 2}))
                 .engine('Memory')
                 .generateSql();
 
@@ -479,7 +480,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.enum(['hello', 'world']))
+                .column('column1', schema.enum(['hello', 'world']))
                 .engine('Memory')
                 .generateSql();
 
@@ -491,7 +492,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.enum8({hello: 1, world: 2}))
+                .column('column1', schema.enum8({hello: 1, world: 2}))
                 .engine('Memory')
                 .generateSql();
 
@@ -503,7 +504,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.enum8(['hello', 'world']))
+                .column('column1', schema.enum8(['hello', 'world']))
                 .engine('Memory')
                 .generateSql();
 
@@ -515,7 +516,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.enum16({hello: 1, world: 2}))
+                .column('column1', schema.enum16({hello: 1, world: 2}))
                 .engine('Memory')
                 .generateSql();
 
@@ -527,7 +528,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.enum16(['hello', 'world']))
+                .column('column1', schema.enum16(['hello', 'world']))
                 .engine('Memory')
                 .generateSql();
 
@@ -539,7 +540,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.lowCardinality(createTable.string()))
+                .column('column1', schema.lowCardinality(schema.string()))
                 .engine('Memory')
                 .generateSql();
 
@@ -551,7 +552,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.array(createTable.string()))
+                .column('column1', schema.array(schema.string()))
                 .engine('Memory')
                 .generateSql();
 
@@ -563,7 +564,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.json())
+                .column('column1', schema.json())
                 .engine('Memory')
                 .generateSql();
 
@@ -575,7 +576,7 @@ describe('CreateTableQuery', () => {
             const sql = createTable
                 .table('table_name')
                 .onCluster('my_cluster')
-                .column('column1', createTable.tuple([
+                .column('column1', schema.tuple([
                     ['s', 'String'],
                     ['i', 'Int64'],
                 ]))
@@ -593,30 +594,30 @@ describe('CreateTableQuery', () => {
         const createTable = getCreateTableQuery();
         const sql = createTable
             .table('uk_price_paid')
-            .column('price', createTable.uInt32())
-            .column('date', createTable.date())
-            .column('postcode1', createTable.lowCardinality(createTable.string()))
-            .column('postcode2', createTable.lowCardinality(createTable.string()))
-            .column('type', createTable.enum8({
+            .column('price', schema.uInt32())
+            .column('date', schema.date())
+            .column('postcode1', schema.lowCardinality(schema.string()))
+            .column('postcode2', schema.lowCardinality(schema.string()))
+            .column('type', schema.enum8({
                 terraced: 1,
                 'semi-detached': 2,
                 detached: 3,
                 flat: 4,
                 other: 0
             }))
-            .column('is_new', createTable.uInt8())
-            .column('duration', createTable.enum8({
+            .column('is_new', schema.uInt8())
+            .column('duration', schema.enum8({
                 freehold: 1,
                 leasehold: 2,
                 unknown: 0
             }))
-            .column('addr1', createTable.string())
-            .column('addr2', createTable.string())
-            .column('street', createTable.lowCardinality(createTable.string()))
-            .column('locality', createTable.lowCardinality(createTable.string()))
-            .column('town', createTable.lowCardinality(createTable.string()))
-            .column('district', createTable.lowCardinality(createTable.string()))
-            .column('county', createTable.lowCardinality(createTable.string()))
+            .column('addr1', schema.string())
+            .column('addr2', schema.string())
+            .column('street', schema.lowCardinality(schema.string()))
+            .column('locality', schema.lowCardinality(schema.string()))
+            .column('town', schema.lowCardinality(schema.string()))
+            .column('district', schema.lowCardinality(schema.string()))
+            .column('county', schema.lowCardinality(schema.string()))
             .engine('MergeTree')
             .orderBy(['postcode1', 'postcode2', 'addr1', 'addr2'])
             .generateSql();
