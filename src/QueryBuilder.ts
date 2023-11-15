@@ -1,4 +1,3 @@
-import {ClickHouse} from 'clickhouse';
 import {Query} from './Query';
 import {Logger} from 'winston';
 import {InsertQuery} from './InsertQuery';
@@ -6,13 +5,14 @@ import {DeleteQuery} from './DeleteQuery';
 import {UpdateQuery} from './UpdateQuery';
 import {CreateTableQuery} from './CreateTableQuery';
 import {AlterTableQuery} from './AlterTable/AlterTableQuery';
-
+import {ClickHouseClient} from '@clickhouse/client';
+import Stream from 'stream';
 
 export class QueryBuilder {
-    private readonly connection: ClickHouse;
+    private readonly connection: ClickHouseClient<Stream.Readable>;
     private readonly logger: Logger | null;
 
-    constructor(ch: ClickHouse, logger: Logger | null = null) {
+    constructor(ch: ClickHouseClient<Stream.Readable>, logger: Logger | null = null) {
         this.connection = ch;
         this.logger = logger;
     }

@@ -1,9 +1,10 @@
-import {ClickHouse} from 'clickhouse';
 import {Logger} from 'winston';
 import {schema} from './index';
+import {ClickHouseClient} from '@clickhouse/client';
+import Stream from 'stream';
 
 export class CreateTableQuery {
-    private readonly connection: ClickHouse;
+    private readonly connection: ClickHouseClient<Stream.Readable>;
     private readonly logger: Logger | null;
 
     private tablePart: string | null = null;
@@ -18,7 +19,7 @@ export class CreateTableQuery {
 
     private orderByPart: Array<string> = [];
 
-    constructor(ch: ClickHouse, logger: Logger | null) {
+    constructor(ch: ClickHouseClient<Stream.Readable>, logger: Logger | null) {
         this.connection = ch;
         this.logger = logger;
     }
@@ -116,12 +117,14 @@ export class CreateTableQuery {
         return sql;
     }
 
-    public async execute<Response>() {
+    public async execute() {
         const sql = this.generateSql();
         if (this.logger !== null) {
             this.logger.info('ClickHouse query SQL: ' + sql);
         }
-        return await (this.connection.query(sql).toPromise() as Promise<Response>);
+        await this.connection.command({
+            query: sql,
+        })
     }
 
     /**

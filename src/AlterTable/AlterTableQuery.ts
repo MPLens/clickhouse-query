@@ -1,4 +1,3 @@
-import {ClickHouse} from 'clickhouse';
 import {Logger} from 'winston';
 import {FilterableQuery} from '../internal';
 import {AddColumn} from './AddColumn';
@@ -7,9 +6,11 @@ import {RenameColumn} from './RenameColumn';
 import {ClearColumn} from './ClearColumn';
 import {CommentColumn} from './CommentColumn';
 import {ModifyColumn} from './ModifyColumn';
+import {ClickHouseClient} from '@clickhouse/client';
+import Stream from 'stream';
 
 export class AlterTableQuery extends FilterableQuery {
-    private readonly connection: ClickHouse;
+    private readonly connection: ClickHouseClient<Stream.Readable>;
     private readonly logger: Logger | null;
 
     private tablePart: string | null = null;
@@ -22,7 +23,7 @@ export class AlterTableQuery extends FilterableQuery {
     private commentColumnPart: CommentColumn | null = null;
     private modifyColumnPart: ModifyColumn | null = null;
 
-    constructor(ch: ClickHouse, logger: Logger | null = null) {
+    constructor(ch: ClickHouseClient<Stream.Readable>, logger: Logger | null = null) {
         super();
         this.connection = ch;
         this.logger = logger;
@@ -106,11 +107,14 @@ export class AlterTableQuery extends FilterableQuery {
         return sql;
     }
 
-    public async execute<Response>() {
+    public async execute() {
         const sql = this.generateSql();
         if (this.logger !== null) {
             this.logger.info('ClickHouse query SQL: ' + sql);
         }
-        return await (this.connection.query(sql).toPromise() as Promise<Response>);
+
+        await this.connection.command({
+            query: sql,
+        });
     }
 }

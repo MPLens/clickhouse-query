@@ -1,5 +1,5 @@
 import {describe, expect, it} from '@jest/globals';
-import {ClickHouse} from 'clickhouse';
+import {createClient} from '@clickhouse/client'
 import winston from 'winston';
 import {DeleteQuery} from '../src/internal';
 
@@ -7,7 +7,7 @@ import {DeleteQuery} from '../src/internal';
 jest.mock('winston');
 
 // @ts-ignore
-jest.mock('clickhouse');
+jest.mock('@clickhouse/client');
 
 function createLogger() {
     return winston.createLogger({
@@ -16,7 +16,7 @@ function createLogger() {
 }
 
 function getDeleteQuery(): DeleteQuery {
-    return new DeleteQuery(new ClickHouse({}), createLogger());
+    return new DeleteQuery(createClient(), createLogger());
 }
 
 describe('DeleteQuery', () => {

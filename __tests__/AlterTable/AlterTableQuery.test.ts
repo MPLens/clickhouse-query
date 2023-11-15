@@ -2,7 +2,7 @@ import {describe, expect, it} from '@jest/globals';
 import {AddColumn} from '../../src/AlterTable/AddColumn';
 import {schema} from '../../src';
 import {AlterTableQuery} from '../../src/AlterTable/AlterTableQuery';
-import {ClickHouse} from 'clickhouse';
+import {createClient} from '@clickhouse/client'
 import winston from 'winston';
 import {DropColumn} from '../../src/AlterTable/DropColumn';
 import {RenameColumn} from '../../src/AlterTable/RenameColumn';
@@ -14,7 +14,7 @@ import {ModifyColumn} from '../../src/AlterTable/ModifyColumn';
 jest.mock('winston');
 
 // @ts-ignore
-jest.mock('clickhouse');
+jest.mock('@clickhouse/client');
 
 function createLogger() {
     return winston.createLogger({
@@ -23,7 +23,7 @@ function createLogger() {
 }
 
 function getAlterTableQuery(): AlterTableQuery {
-    return new AlterTableQuery(new ClickHouse({}), createLogger());
+    return new AlterTableQuery(createClient(), createLogger());
 }
 
 describe('AlterTableQuery', () => {
