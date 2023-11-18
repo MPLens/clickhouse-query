@@ -750,6 +750,18 @@ describe('Query', () => {
 
             expect(sql).toBe(`SELECT id, first_name FROM users LIMIT 10`);
         });
+
+
+        it('LIMIT BY', () => {
+            const query = getQuery();
+            const sql = query
+                .select(['id', 'first_name'])
+                .from('users')
+                .limit(1, ['id'])
+                .generateSql();
+
+            expect(sql).toBe(`SELECT id, first_name FROM users LIMIT 1 BY id`);
+        });
     });
 
     describe('JOINs', () => {

@@ -35,6 +35,7 @@ export class Query extends FilterableQuery {
     private groupByPart: Array<string> | null = null;
     private orderByPart: Array<OrderBy> | null = null;
     private limitPart: number | string | null = null;
+    private limitByPart: string[] = [];
     private offsetPart: number | string | null = null;
     private joinPart: Array<[JoinOperator, Query | string, string, string]> = [];
     private aliasPart: [string, 'first' | 'last'] | null = null;
@@ -91,8 +92,9 @@ export class Query extends FilterableQuery {
         return this;
     }
 
-    public limit(limit: number | string) {
+    public limit(limit: number | string, by: string[] = []) {
         this.limitPart = limit;
+        this.limitByPart = by;
         return this;
     }
 
@@ -198,6 +200,9 @@ export class Query extends FilterableQuery {
             sql += ` OFFSET ${this.offsetPart} ROW FETCH FIRST ${this.limitPart} ROWS ONLY`;
         } else if (this.offsetPart === null && this.limitPart !== null) {
             sql += ` LIMIT ${this.limitPart}`;
+            if (this.limitByPart.length > 0) {
+                sql += ` BY ${this.limitByPart.join(', ')}`;
+            }
         }
 
 
