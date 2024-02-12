@@ -1,15 +1,15 @@
-import {ClickHouse} from 'clickhouse';
-import {Logger} from 'winston';
 import {FilterableQuery} from './internal';
 import {expr} from './index';
+import {LoggerLike} from './LoggerLike';
+import {ClickHouseLike} from './ClickhouseLike';
 
 export class DeleteQuery extends FilterableQuery {
-    private readonly connection: ClickHouse;
-    private readonly logger: Logger | null;
+    private readonly connection: ClickHouseLike;
+    private readonly logger: LoggerLike | null;
 
     private tablePart: string | null = null;
 
-    constructor(ch: ClickHouse, logger: Logger | null) {
+    constructor(ch: ClickHouseLike, logger: LoggerLike | null) {
         super();
         this.connection = ch;
         this.logger = logger;

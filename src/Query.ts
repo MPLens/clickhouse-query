@@ -1,6 +1,6 @@
-import {ClickHouse} from 'clickhouse';
-import {Logger} from 'winston';
 import {FilterableQuery, Operator, WherePart, WhereValueCondition, Expression} from './internal';
+import {ClickHouseLike} from './ClickhouseLike';
+import {LoggerLike} from './LoggerLike';
 
 type Selectable = Array<string | String | Query> | string;
 type SelectParams = Selectable | '*';
@@ -25,8 +25,8 @@ type JoinOperator =
     | 'LEFT ASOF JOIN';
 
 export class Query extends FilterableQuery {
-    private readonly connection: ClickHouse;
-    private readonly logger: Logger | null;
+    private readonly connection: ClickHouseLike;
+    private readonly logger: LoggerLike | null;
     private withPart: [Selectable | Query | string | null, string | null] = [null, null];
     private selectPart: SelectParams = '*';
     private fromPart: [string | Query, string | null] | null = null;
@@ -40,7 +40,7 @@ export class Query extends FilterableQuery {
     private joinPart: Array<[JoinOperator, Query | string, string, string]> = [];
     private aliasPart: [string, 'first' | 'last'] | null = null;
 
-    constructor(ch: ClickHouse, logger: Logger | null) {
+    constructor(ch: ClickHouseLike, logger: LoggerLike | null) {
         super();
         this.connection = ch;
         this.logger = logger;

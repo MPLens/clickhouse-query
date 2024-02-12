@@ -1,5 +1,3 @@
-import {ClickHouse} from 'clickhouse';
-import {Logger} from 'winston';
 import {FilterableQuery} from '../internal';
 import {AddColumn} from './AddColumn';
 import {DropColumn} from './DropColumn';
@@ -7,10 +5,12 @@ import {RenameColumn} from './RenameColumn';
 import {ClearColumn} from './ClearColumn';
 import {CommentColumn} from './CommentColumn';
 import {ModifyColumn} from './ModifyColumn';
+import {LoggerLike} from '../LoggerLike';
+import {ClickHouseLike} from '../ClickhouseLike';
 
 export class AlterTableQuery extends FilterableQuery {
-    private readonly connection: ClickHouse;
-    private readonly logger: Logger | null;
+    private readonly connection: ClickHouseLike;
+    private readonly logger: LoggerLike | null;
 
     private tablePart: string | null = null;
     private clusterPart: string | null = null;
@@ -22,7 +22,7 @@ export class AlterTableQuery extends FilterableQuery {
     private commentColumnPart: CommentColumn | null = null;
     private modifyColumnPart: ModifyColumn | null = null;
 
-    constructor(ch: ClickHouse, logger: Logger | null = null) {
+    constructor(ch: ClickHouseLike, logger: LoggerLike | null = null) {
         super();
         this.connection = ch;
         this.logger = logger;

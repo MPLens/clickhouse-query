@@ -1,10 +1,10 @@
-import {ClickHouse} from 'clickhouse';
-import {Logger} from 'winston';
 import {schema} from './index';
+import {LoggerLike} from './LoggerLike';
+import {ClickHouseLike} from './ClickhouseLike';
 
 export class CreateTableQuery {
-    private readonly connection: ClickHouse;
-    private readonly logger: Logger | null;
+    private readonly connection: ClickHouseLike | null;
+    private readonly logger: LoggerLike | null;
 
     private tablePart: string | null = null;
 
@@ -18,7 +18,7 @@ export class CreateTableQuery {
 
     private orderByPart: Array<string> = [];
 
-    constructor(ch: ClickHouse, logger: Logger | null) {
+    constructor(ch: ClickHouseLike | null, logger: LoggerLike | null) {
         this.connection = ch;
         this.logger = logger;
     }
@@ -117,6 +117,10 @@ export class CreateTableQuery {
     }
 
     public async execute<Response>() {
+        if (this.connection === null) {
+            throw new Error('No ClickHouse connection provided');
+        }
+
         const sql = this.generateSql();
         if (this.logger !== null) {
             this.logger.info('ClickHouse query SQL: ' + sql);
