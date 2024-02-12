@@ -1,17 +1,17 @@
-import {ClickHouse} from 'clickhouse';
-import {Logger} from 'winston';
 import {FilterableQuery} from './FilterableQuery';
 import {Expression} from './Expression';
+import {ClickHouseLike} from './ClickhouseLike';
+import {LoggerLike} from './LoggerLike';
 
 export class UpdateQuery extends FilterableQuery {
-    private readonly connection: ClickHouse;
-    private readonly logger: Logger | null;
+    private readonly connection: ClickHouseLike;
+    private readonly logger: LoggerLike | null;
 
     private tablePart: string | null = null;
 
     private valuesPart: Array<[string, unknown]> = [];
 
-    constructor(ch: ClickHouse, logger: Logger | null) {
+    constructor(ch: ClickHouseLike, logger: LoggerLike | null) {
         super();
         this.connection = ch;
         this.logger = logger;

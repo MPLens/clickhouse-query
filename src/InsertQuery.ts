@@ -1,22 +1,18 @@
-import {ClickHouse} from 'clickhouse';
-import {Logger} from 'winston';
 import {Query} from './Query';
-
-type FileFormats = 'none'
+import {ClickHouseLike} from './ClickhouseLike';
+import {LoggerLike} from './LoggerLike';
 
 type Values<T extends Object> = Array<T> | Query;
 
 export class InsertQuery {
-    private readonly connection: ClickHouse;
-    private readonly logger: Logger | null;
+    private readonly connection: ClickHouseLike;
+    private readonly logger: LoggerLike | null;
 
     private intoPart: string | null = null;
     private columnsPart: string[] | null = null;
     private valuesPart: Values<Object> | null = null;
 
-    private valuesFromFile: [string, string] | null = null;
-
-    constructor(ch: ClickHouse, logger: Logger | null) {
+    constructor(ch: ClickHouseLike, logger: LoggerLike | null) {
         this.connection = ch;
         this.logger = logger;
     }
